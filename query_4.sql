@@ -2,8 +2,8 @@ SELECT DISTINCT p.nom
 FROM patient p
 JOIN traitement t ON t.NISS = p.NISS
 JOIN medicament m ON m.DCI = t.DCI
-WHERE m.NomC = 'Nom du médicament recherché'
-AND t.Date_de_debut >= 'Date de début recherchée'
+WHERE m.NomC = {placeholder1}
+AND t.Date_de_debut >= {placeholder2}
 
 /*
 Tous les utilisateurs ayant consommé un médicament spécifique
