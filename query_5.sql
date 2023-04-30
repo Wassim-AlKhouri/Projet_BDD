@@ -2,7 +2,7 @@ SELECT p.nom
 FROM Patient p
 JOIN Traitement t ON p.NISS = t.NISS
 JOIN Medicament m ON m.DCI = t.DCI 
-WHERE m.DCI = 'DCI du médicament recherché' 
+WHERE m.DCI = {placeholder} 
 AND (t.Date_de_debut + t.Duree) < CURDATE() 
 
 /*
