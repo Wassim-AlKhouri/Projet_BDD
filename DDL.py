@@ -19,103 +19,102 @@ except mysql.connector.errors.DatabaseError as err:
     exit(1)
 cursor.execute("USE groupAX_DB")
 
-cursor.execute("""CREATE TABLE anatomic_system (
-                anatomic_system_name VARCHAR(50) PRIMARY KEY
+cursor.execute("""CREATE TABLE SystèmeAnatomique (
+                systèmeAnatomiqueNom VARCHAR(50) PRIMARY KEY
                 )""")
 
-cursor.execute("""CREATE TABLE disease (
-                disease_name VARCHAR(50) PRIMARY KEY,
-                anatomic_system_name VARCHAR(50) NOT NULL REFERENCES anatomic_system(anatomic_system_name)
+cursor.execute("""CREATE TABLE Pathologie (
+                pathologieNom VARCHAR(50) PRIMARY KEY,
+                systèmeAnatomiqueNom VARCHAR(50) NOT NULL REFERENCES SystèmeAnatomique(systèmeAnatomiqueNom)
                 )""")
 
-cursor.execute("""CREATE TABLE medecin (
+cursor.execute("""CREATE TABLE Medicament (
                 DCI VARCHAR(50) PRIMARY KEY,
-                commercial_name VARCHAR(50) NOT NULL,
-                packaging INT NOT NULL
+                medicamentNomCommercial VARCHAR(50) NOT NULL,
+                conditionnement INT NOT NULL
                 )""")
 
-cursor.execute("""CREATE TABLE employ (
+cursor.execute("""CREATE TABLE Employe (
                 INAMI INT PRIMARY KEY,
-                fristnam VARCHAR(50) NOT NULL,
-                lastname VARCHAR(50) NOT NULL,
-                phone_number INT NOT NULL
+                employeNom VARCHAR(50) NOT NULL,
+                employeNum INT NOT NULL
                 )""")
 
-cursor.execute("""CREATE TABLE employEmail (
-                INAMI INT NOT NULL REFERENCES employ(INAMI),
+cursor.execute("""CREATE TABLE EmployeEmail (
+                INAMI INT NOT NULL REFERENCES Employe(INAMI),
                 email VARCHAR(50) NOT NULL,
                 PRIMARY KEY (INAMI, email)
                 )""")
 
-cursor.execute("CREATE TABLE doctor LIKE employ")
-cursor.execute("ALTER TABLE doctor ADD speciality VARCHAR(50) NOT NULL REFERENCES anatomic_system(anatomic_system_name)")
+cursor.execute("CREATE TABLE Medecin LIKE Employe")
+cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES SystèmeAnatomique(systèmeAnatomiqueNom)")
 
-cursor.execute("CREATE TABLE pharmacist LIKE employ")
+cursor.execute("CREATE TABLE Pharmacien LIKE Employe")
 
-cursor.execute("""CREATE TABLE delivery (
-                pharmacist_INAMI INT NOT NULL REFERENCES pharmacist(INAMI),
-                doctor_INAMI INT NOT NULL REFERENCES doctor(INAMI),
-                patient_id INT NOT NULL REFERENCES patient(patient_id),
-                DCI VARCHAR(50) NOT NULL REFERENCES medecin(DCI),
-                PRIMARY KEY (pharmacist_INAMI, doctor_INAMI, patient_id, DCI)
-                )""")
-
-cursor.execute("""CREATE TABLE patient (
-                patient_id INT PRIMARY KEY,
-                fristnam VARCHAR(50) NOT NULL, 
-                lastname VARCHAR(50) NOT NULL,
-                birthdate DATE NOT NULL,
-                refernce_doctor_INAMI INT NOT NULL REFERENCES doctor(INAMI),
-                refernce_pharmacist_INAMI INT NOT NULL REFERENCES pharmacist(INAMI)
+cursor.execute("""CREATE TABLE Patient (
+                patientId INT PRIMARY KEY,
+                prenom VARCHAR(50) NOT NULL, 
+                nom VARCHAR(50) NOT NULL,
+                DateNaissance DATE NOT NULL,
+                medecinDeReferenceINAMI INT NOT NULL REFERENCES Medecin(INAMI),
+                pharmacienDeReferenceINAMI INT NOT NULL REFERENCES Pharmacien(INAMI)
                 )""")
 
 cursor.execute("""CREATE TABLE patientEmail (
-                patient_id INT NOT NULL REFERENCES patient(patient_id),
+                patientId INT NOT NULL REFERENCES Patient(patientId),
                 email VARCHAR(50) NOT NULL,
-                PRIMARY KEY (patient_id, email) 
+                PRIMARY KEY (patientId, email) 
                 )""") #besoin de email ?
 
-cursor.execute("""CREATE TABLE patientPhone (
-                patient_id INT NOT NULL REFERENCES patient(patient_id),
-                phone_number INT NOT NULL,
-                PRIMARY KEY (patient_id, phone_number)
-                )""") # besoin de phone_number ?
+cursor.execute("""CREATE TABLE patientGSM (
+                patientId INT NOT NULL REFERENCES Patient(patientId),
+                numeroGSM INT NOT NULL,
+                PRIMARY KEY (patientId, numeroGSM)
+                )""") # besoin de numeroGSM ?
 
-cursor.execute("""CREATE TABLE patient_file (
-                patient_id INT PRIMARY KEY REFERENCES patient(patient_id)
+cursor.execute("""CREATE TABLE Dossier (
+                patientId INT PRIMARY KEY REFERENCES Patient(patientId)
                 )""")
 
-cursor.execute("""CREATE TABLE patient_file_disease (
-                patient_id INT NOT NULL REFERENCES patient_file(patient_id),
-                disease_name VARCHAR(50) NOT NULL REFERENCES disease(disease_name),
-                diagnosis_date DATE NOT NULL,
-                PRIMARY KEY (patient_id, disease_name)
+cursor.execute("""CREATE TABLE DossierPathologie (
+                patientId INT NOT NULL REFERENCES Dossier(patientId),
+                pathologieNom VARCHAR(50) NOT NULL REFERENCES Pathologie(pathologieNom),
+                dateDiagnostic  DATE NOT NULL,
+                PRIMARY KEY (patientId, pathologieNom)
                 )""")
 
-cursor.execute("""CREATE TABLE diagnosis (
-                doctor_INAMI INT NOT NULL REFERENCES doctor(INAMI),
-                patient_id INT NOT NULL REFERENCES patient_file(patient_id),
-                disease_name VARCHAR(50) NOT NULL REFERENCES disease(disease_name),
-                diagnosis_date DATE NOT NULL,
-                PRIMARY KEY (doctor_INAMI ,patient_id, disease_name)
+cursor.execute("""CREATE TABLE Diagnostic (
+                medecinINAMI INT NOT NULL REFERENCES Medecin(INAMI),
+                patientId INT NOT NULL REFERENCES Dossier(patientId),
+                pathologieNom VARCHAR(50) NOT NULL REFERENCES Pathologie(pathologieNom),
+                dateDiagnostic DATE NOT NULL,
+                PRIMARY KEY (medecinINAMI ,patientId, pathologieNom)
                 )""")
 
-cursor.execute("""CREATE TABLE prescription (
-                patient_id INT NOT NULL REFERENCES patient_file(patient_id),
-                DCI VARCHAR(50) NOT NULL REFERENCES medecin(DCI),
-                doctor_INAMI INT NOT NULL REFERENCES doctor(INAMI),
-                duration INT NOT NULL,
-                PRIMARY KEY (doctor_INAMI ,patient_id, DCI)
+cursor.execute("""CREATE TABLE Prescription  (
+                patientId INT NOT NULL REFERENCES Dossier(patientId),
+                DCI VARCHAR(50) NOT NULL REFERENCES Medicament(DCI),
+                medecinINAMI INT NOT NULL REFERENCES Medecin(INAMI),
+                Duree INT NOT NULL,
+                PRIMARY KEY (medecinINAMI ,patientId, DCI)
                 )""")
 
-cursor.execute("""CREATE TABLE treatment (
-                patient_id INT NOT NULL REFERENCES patient_file(patient_id),
-                DCI VARCHAR(50) NOT NULL REFERENCES medecin(DCI),
-                starting_date DATE NOT NULL,
-                doctor_INAMI INT NOT NULL REFERENCES doctor(INAMI),
-                pharmacist_INAMI INT NOT NULL REFERENCES pharmacist(INAMI),
-                duration INT NOT NULL,
-                PRIMARY KEY (patient_id, DCI, starting_date)
+cursor.execute("""CREATE TABLE Traitement (
+                patientId INT NOT NULL REFERENCES Dossier(patientId),
+                DCI VARCHAR(50) NOT NULL REFERENCES Medicament(DCI),
+                dateDébut DATE NOT NULL,
+                medecinINAMI INT NOT NULL REFERENCES Medecin(INAMI),
+                pharmacienINAMI INT NOT NULL REFERENCES Pharmacien(INAMI),
+                Duree INT NOT NULL,
+                PRIMARY KEY (patientId, DCI, dateDébut)
+                )""")
+
+cursor.execute("""CREATE TABLE Délivrance (
+                pharmacienINAMI INT NOT NULL REFERENCES Pharmacien(INAMI),
+                medecinINAMI INT NOT NULL REFERENCES Medecin(INAMI),
+                patientId INT NOT NULL REFERENCES Patient(patient_id),
+                DCI VARCHAR(50) NOT NULL REFERENCES Medicament(DCI),
+                PRIMARY KEY (pharmacienINAMI, medecinINAMI, patientId, DCI)
                 )""")
 
 # Commit the changes and close the cursor and connection objects
