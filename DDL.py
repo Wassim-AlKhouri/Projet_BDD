@@ -117,6 +117,19 @@ cursor.execute("""CREATE TABLE Délivrance (
                 PRIMARY KEY (pharmacienINAMI, medecinINAMI, patientId, DCI)
                 )""")
 
+# Add data base
+cursor.execute("INSERT INTO Pharmacien" )("INSERT INTO VALUES(%s,%s)",())
+cursor.execute("INSERT INTO Medecin VALUES(%s,%s)",())
+cursor.execute("INSERT INTO Patient VALUES(%s,%s)",())
+cursor.execute("INSERT INTO Dossier VALUES(%s,%s)",()) 
+cursor.execute("INSERT INTO Diagnostic VALUES(%s,%s)",()) 
+cursor.execute("INSERT INTO Pescription VALUES(%s,%s)",()) 
+cursor.execute("INSERT INTO Traitement VALUES(%s,%s)",())
+cursor.execute("INSERT INTO Delivrance (pharmacienINAMI INT,medecinINAMI INT,patientId INT ,DCI VARCHAR(50))VALUES(%i,%i,%i,%s)",() ) 
+cursor.execute("INSERT INTO PathologieVALUES(%s,%s)",())
+cursor.execute("INSERT INTO DSystème AnatomiqueVALUES(%s,%s)",())
+
+
 # Commit the changes and close the cursor and connection objects
 cnx.commit()
 cursor.close()
