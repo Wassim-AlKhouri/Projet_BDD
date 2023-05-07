@@ -1,7 +1,6 @@
-SELECT p.Nom
-FROM Pathologie p
-JOIN Diagnostic d ON p.Nom = d.Pathologie_Nom
-GROUP BY p.Nom
+SELECT d.pathologieNom
+FROM Diagnostic d
+GROUP BY d.pathologieNom
 ORDER BY COUNT(*) DESC
 LIMIT 1;
 

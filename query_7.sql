@@ -1,9 +1,9 @@
-SELECT med.NomC
+SELECT med.medicamentNomCommercial
 FROM Medicament med
-JOIN Traitement t ON t.DCI = med.DCI
-JOIN Patient p ON P.NISS=t.NISS
+JOIN DossierPatient d ON d.medicamentNomCommercial=med.medicamentNomCommercial
+JOIN Patient p ON P.NISS=d.NISS
 WHERE p.DateNaissance > {placeholder} AND p.DateNaissance < {placeholder} + 10 
-GROUP BY med.NomC
+GROUP BY med.medicamentNomCommercial
 ORDER BY COUNT(*) DESC
 LIMIT 1 
 

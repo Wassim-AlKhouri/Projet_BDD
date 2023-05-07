@@ -1,9 +1,8 @@
-SELECT p.nom
+SELECT DISTINCT p.nom, p.prenom
 FROM Patient p
-JOIN Traitement t ON p.NISS = t.NISS
-JOIN Medicament m ON m.DCI = t.DCI 
-WHERE m.DCI = {placeholder} 
-AND (t.Date_de_debut + t.Duree) < CURDATE() 
+JOIN DossierPatient d ON d.NISS = p.NISS
+WHERE d.DCI = {placeholder}
+AND (d.datePrescription + d.dureeTraitement) < CURDATE() 
 
 /*
 Tous les  patients ayant été traités par un médicament (sous sa DCI) 

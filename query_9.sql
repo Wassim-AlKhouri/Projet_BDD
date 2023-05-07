@@ -1,8 +1,6 @@
-SELECT COUNT(DISTINCT m.INAMI)
-FROM medecin m
-JOIN prescription pr ON pr.INAMI_med = m.INAMI
-JOIN patient p ON p.NISS = pr.NISS
-WHERE p.NISS = {placeholder};
+SELECT COUNT(DISTINCT d.medecinINAMI)
+FROM DossierPatient d 
+WHERE d.NISS = {placeholder};
 
 /*
 Pour chaque patient,le nombre de médecin lui ayant prescrit
