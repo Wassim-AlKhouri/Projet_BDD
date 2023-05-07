@@ -1,3 +1,4 @@
+<patients>
 
   <patient>
     <NISS>184232301592</NISS>
@@ -3559,3 +3560,5 @@
     <prenom>Godefroy</prenom>
     <telephone>+3267533128178</telephone>
   </patient>
+
+</patients>

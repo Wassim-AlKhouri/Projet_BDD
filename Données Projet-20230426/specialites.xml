@@ -1,3 +1,4 @@
+<specialites>
 <specialite>
 	<name>Addictologie</name>
 	<medicament>systeme nerveux</medicament>
@@ -75,3 +76,5 @@
 	<name>Rhumatologie</name>
 	<medicament>muscle et squelette</medicament>
 </specialite>
+
+</specialites>
