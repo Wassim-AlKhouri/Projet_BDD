@@ -28,8 +28,9 @@ cursor.execute("""CREATE TABLE SpecialiteSystèmeAnatomique (
                 )""")
 
 cursor.execute("""CREATE TABLE Pathologie (
-                pathologieNom VARCHAR(50) PRIMARY KEY,
-                specialiteNom VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom)
+                pathologieNom VARCHAR(50),
+                specialiteNom VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom),
+                PRIMARY KEY (pathologieNom, specialiteNom)
                 )""")
 
 cursor.execute("""CREATE TABLE Medicament (
@@ -80,7 +81,7 @@ cursor.execute("""CREATE TABLE PatientGSM (
                 )""") # besoin de numeroGSM ?
 
 cursor.execute("""CREATE TABLE DossierPatient (
-                NISS DECIMAL(12,0) PRIMARY KEY REFERENCES Patient(NISS),
+                NISS DECIMAL(12,0) REFERENCES Patient(NISS),
                 medecinNom VARCHAR(50) NOT NULL,
                 medecinINAMI DECIMAL(12,0) NOT NULL REFERENCES Medecin(INAMI),
                 pharmacienNom VARCHAR(50) NOT NULL,
@@ -89,7 +90,8 @@ cursor.execute("""CREATE TABLE DossierPatient (
                 DCI VARCHAR(50) NOT NULL,
                 datePrescription DATE NOT NULL,
                 dateVente DATE NOT NULL,
-                dureeTraitement INT NOT NULL
+                dureeTraitement INT NOT NULL,
+                Primary Key (NISS,  medecinINAMI, medicamentNomCommercial, datePrescription)
                 )""")
 
 cursor.execute("""CREATE TABLE Diagnostic (

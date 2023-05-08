@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import os
 import mysql.connector
 from datetime import datetime
+import csv
 ############################ BASIC ###################################################################################
 
 def convert_date(date):
@@ -144,6 +145,44 @@ def insert_specialite(path,cursor):
             
 
 ############################# CSV ###################################################################################
+
+
+def insert_csv(path,cursor):
+    root_name = os.path.splitext(os.path.basename(path))[0]
+    with open(path,'r', encoding="utf-8") as file:
+        csvreader = list(csv.reader(file))
+        if (root_name == "dossiers_patients"):
+            categorie = csvreader[0]
+            cat = ",".join(categorie) 
+            for row in csvreader[1:]:
+                values = list(row)
+                values[7] = convert_date(values[7])
+                values[8] = convert_date(values[8])
+                cursor.execute("""INSERT INTO DossierPatient 
+                                (NISS,medecinNom,medecinINAMI,pharmacienNom,pharmacienINAMI,medicamentNomCommercial,DCI,datePrescription,dateVente,dureeTraitement) 
+                                VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+                                (values))
+        elif( root_name == "medicaments"):
+            categorie = csvreader[0]
+            cat = ",".join(categorie) 
+            for row in csvreader[1:]:
+                values = list(row)
+                cursor.execute("""INSERT INTO Medicament 
+                            (DCI,medicamentNomCommercial,systèmeAnatomiqueNom,conditionnement) 
+                            VALUES(%s,%s,%s,%s)""",
+                            (values))
+        elif( root_name == "pathologies"):
+            for row in csvreader:
+                values = list(row)
+                try:
+                    cursor.execute("""INSERT INTO Pathologie 
+                                    (pathologieNom, specialiteNom) 
+                                    VALUES(%s,%s)""",
+                                    (values))
+                except(mysql.connector.errors.IntegrityError):
+                    print("duplicate entry for pathologieNom: " + values[0] + " and specialiteNom: " + values[1])
+
+
 ############################# MAIN ###################################################################################
 
 
@@ -155,17 +194,29 @@ if __name__ == "__main__":
         database='groupAX_DB'
     )
     cursor = cnx.cursor()
-    insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\diagnostiques.xml",cursor)
-    insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\pharmaciens.xml",cursor)
-    insert_medecin("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\medecins.xml",cursor)
-    insert_patient("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\patients.xml",cursor)
-    insert_specialite("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\specialites.xml",cursor)
-    #TESTING
-    #cursor.execute("SELECT * FROM SpecialiteSystèmeAnatomique")
-    #rows = cursor.fetchall()
-    #for row in rows:
-    #    print(row)
-    #print("Number of rows: %s" % cursor.rowcount)
+    #insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\diagnostiques.xml",cursor)
+    #insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\pharmaciens.xml",cursor)
+    #insert_medecin("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\medecins.xml",cursor)
+    #insert_patient("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\patients.xml",cursor)
+    #insert_specialite("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\specialites.xml",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\dossiers_patients.csv",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\medicaments.csv",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\pathologies.csv",cursor)
+
+    ### TESTING ###
+    cursor.execute("""SELECT s.specialiteNom
+                    FROM Specialite s
+                    JOIN SpecialiteSystèmeAnatomique a ON s.specialiteNom = a.SpecialiteNom
+                    JOIN Medicament m ON m.systèmeAnatomiqueNom=a.systèmeAnatomiqueNom
+                    JOIN DossierPatient d ON d.medicamentNomCommercial=m.medicamentNomCommercial
+                    GROUP BY s.specialiteNom
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1;""")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
+    print("Number of rows: %s" % cursor.rowcount)
+
     cnx.commit()
     cursor.close()
     cnx.close()
