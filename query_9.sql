@@ -1,3 +1,3 @@
 SELECT COUNT(DISTINCT d.medecinINAMI)
 FROM DossierPatient d 
-WHERE d.NISS = {placeholder1};
+WHERE d.NISS = '{placeholder1}'
