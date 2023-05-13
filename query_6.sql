@@ -6,7 +6,5 @@ JOIN SpecialiteSystèmeAnatomique spsa ON spsa.systèmeAnatomiqueNom = med.syst�
 JOIN Specialite sp ON sp.specialiteNom = spsa.specialiteNom
 WHERE m.specialite <> sp.specialiteNom;
 
-/*
-La liste des médecins ayant prescrit des médicaments 
-ne relevant pas de leur spécialité
-*/
+--La liste des médecins ayant prescrit des médicaments 
+--ne relevant pas de leur spécialité

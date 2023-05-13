@@ -6,7 +6,6 @@ JOIN DossierPatient d ON d.medicamentNomCommercial=m.medicamentNomCommercial
 GROUP BY s.specialiteNom
 ORDER BY COUNT(*) DESC
 LIMIT 1;
-/*
-La spécialité de médecins pour laquelle les médecins 
-prescrivent le plus de médicaments
-*/
+
+--La spécialité de médecins pour laquelle les médecins 
+--prescrivent le plus de médicaments
