@@ -155,7 +155,8 @@ class MyGUI():
         """
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
-        sql = sql.format(*args)
+        named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
+        sql = sql.format(**named_args)
         print(sql)
         cursor.execute(sql)
         result = cursor.fetchall()

@@ -21,10 +21,10 @@ cursor.execute("USE groupAX_DB")
 
 cursor.execute("""CREATE TABLE Specialite (specialiteNom VARCHAR(50) PRIMARY KEY)""")
 
-cursor.execute("""CREATE TABLE SpecialiteSystèmeAnatomique (
-                systèmeAnatomiqueNom VARCHAR(50),
+cursor.execute("""CREATE TABLE SpecialiteSystemeAnatomique (
+                systemeAnatomiqueNom VARCHAR(50),
                 specialiteNom VARCHAR(50),
-                PRIMARY KEY (systèmeAnatomiqueNom, specialiteNom)
+                PRIMARY KEY (systemeAnatomiqueNom, specialiteNom)
                 )""")
 
 cursor.execute("""CREATE TABLE Pathologie (
@@ -35,7 +35,7 @@ cursor.execute("""CREATE TABLE Pathologie (
 
 cursor.execute("""CREATE TABLE Medicament (
                 DCI VARCHAR(50),
-                systèmeAnatomiqueNom VARCHAR(50),
+                systemeAnatomiqueNom VARCHAR(50),
                 medicamentNomCommercial VARCHAR(50) NOT NULL,
                 conditionnement INT NOT NULL,
                 PRIMARY KEY (medicamentNomCommercial, conditionnement)
@@ -54,7 +54,7 @@ cursor.execute("""CREATE TABLE EmployeEmail (
                 )""")
 
 cursor.execute("CREATE TABLE Medecin LIKE Employe")
-cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES SystèmeAnatomique(systèmeAnatomiqueNom)")
+cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES SystemeAnatomique(systemeAnatomiqueNom)")
 
 cursor.execute("CREATE TABLE Pharmacien LIKE Employe")
 

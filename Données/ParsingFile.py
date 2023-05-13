@@ -135,12 +135,12 @@ def insert_specialite(path,cursor):
                               VALUES (%s)""",
                               (specialiteNom,)
                             )
-            for systèmeAnatomiqueNom in specialite.iter('medicament'):
-                systèmeAnatomiqueNom = systèmeAnatomiqueNom.text
-                cursor.execute("""INSERT INTO SpecialiteSystèmeAnatomique 
-                                (systèmeAnatomiqueNom, specialiteNom) 
+            for systemeAnatomiqueNom in specialite.iter('medicament'):
+                systemeAnatomiqueNom = systemeAnatomiqueNom.text
+                cursor.execute("""INSERT INTO SpecialiteSystemeAnatomique 
+                                (systemeAnatomiqueNom, specialiteNom) 
                                 VALUES (%s,%s)""",
-                                (systèmeAnatomiqueNom, specialiteNom)
+                                (systemeAnatomiqueNom, specialiteNom)
                                 )
             
 
@@ -168,7 +168,7 @@ def insert_csv(path,cursor):
             for row in csvreader[1:]:
                 values = list(row)
                 cursor.execute("""INSERT INTO Medicament 
-                            (DCI,medicamentNomCommercial,systèmeAnatomiqueNom,conditionnement) 
+                            (DCI,medicamentNomCommercial,systemeAnatomiqueNom,conditionnement) 
                             VALUES(%s,%s,%s,%s)""",
                             (values))
         elif( root_name == "pathologies"):
@@ -194,28 +194,28 @@ if __name__ == "__main__":
         database='groupAX_DB'
     )
     cursor = cnx.cursor()
-    #insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\diagnostiques.xml",cursor)
-    #insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\pharmaciens.xml",cursor)
-    #insert_medecin("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\medecins.xml",cursor)
-    #insert_patient("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\patients.xml",cursor)
-    #insert_specialite("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\specialites.xml",cursor)
-    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\dossiers_patients.csv",cursor)
-    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\medicaments.csv",cursor)
-    #insert_csv("D:\documents\GitHub\Projet_BDD\Données Projet-20230426\pathologies.csv",cursor)
+    insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données\diagnostiques.xml",cursor)
+    insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données\pharmaciens.xml",cursor)
+    insert_medecin("D:\documents\GitHub\Projet_BDD\Données\medecins.xml",cursor)
+    insert_patient("D:\documents\GitHub\Projet_BDD\Données\patients.xml",cursor)
+    insert_specialite("D:\documents\GitHub\Projet_BDD\Données\specialites.xml",cursor)
+    insert_csv("D:\documents\GitHub\Projet_BDD\Données\dossiers_patients.csv",cursor)
+    insert_csv("D:\documents\GitHub\Projet_BDD\Données\medicaments.csv",cursor)
+    insert_csv("D:\documents\GitHub\Projet_BDD\Données\pathologies.csv",cursor)
 
     ### TESTING ###
-    cursor.execute("""SELECT s.specialiteNom
-                    FROM Specialite s
-                    JOIN SpecialiteSystèmeAnatomique a ON s.specialiteNom = a.SpecialiteNom
-                    JOIN Medicament m ON m.systèmeAnatomiqueNom=a.systèmeAnatomiqueNom
-                    JOIN DossierPatient d ON d.medicamentNomCommercial=m.medicamentNomCommercial
-                    GROUP BY s.specialiteNom
-                    ORDER BY COUNT(*) DESC
-                    LIMIT 1;""")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
-    print("Number of rows: %s" % cursor.rowcount)
+    #cursor.execute("""SELECT s.specialiteNom
+    #                FROM Specialite s
+    #                JOIN SpecialiteSystemeAnatomique a ON s.specialiteNom = a.SpecialiteNom
+    #                JOIN Medicament m ON m.systemeAnatomiqueNom=a.systemeAnatomiqueNom
+    #                JOIN DossierPatient d ON d.medicamentNomCommercial=m.medicamentNomCommercial
+    #                GROUP BY s.specialiteNom
+    #                ORDER BY COUNT(*) DESC
+    #                LIMIT 1;""")
+    #rows = cursor.fetchall()
+    #for row in rows:
+    #    print(row)
+    #print("Number of rows: %s" % cursor.rowcount)
 
     cnx.commit()
     cursor.close()
