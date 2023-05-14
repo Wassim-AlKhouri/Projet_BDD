@@ -193,10 +193,12 @@ class MyGUI():
         if(infoPatient == None or infoMedecin == None or infoPharmacien == None):
             messagebox.showerror("Error", "Les informations n'ont pas été trouvées")
             return
+        self.root.withdraw()
 
         self.clientWindow = tk.Toplevel(self.root)
         self.clientWindow.title(f"Client {infoPatient[0]}")
         self.clientWindow.geometry("500x500")
+        self.clientWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.clientWindow,self.root))
 
         clientInfo = tk.Text(self.clientWindow, height=7, width=50,wrap="word")
 
@@ -233,9 +235,11 @@ class MyGUI():
                             )
         infoMedecin = self.cursor.fetchall()
 
+        self.clientWindow.withdraw()
         self.changeWindow = tk.Toplevel(self.clientWindow)
-        self.changeWindow.title(f"Changer de medecin")
+        self.changeWindow.title("Changer de medecin")
         self.changeWindow.geometry("500x500")
+        self.changeWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.changeWindow,self.clientWindow))
 
         label = tk.Label(self.changeWindow, text="Choisissez un medecin")
         label.pack(pady=10)
@@ -266,9 +270,11 @@ class MyGUI():
                             )
         infoPharmacien = self.cursor.fetchall()
 
+        self.clientWindow.withdraw()
         self.changeWindow = tk.Toplevel(self.clientWindow)
-        self.changeWindow.title(f"Changer de pharmacien")
+        self.changeWindow.title("Changer de pharmacien")
         self.changeWindow.geometry("500x500")
+        self.changeWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.changeWindow,self.clientWindow))
 
         label = tk.Label(self.changeWindow, text="Choisissez un pharmacien")
         label.pack(pady=10)
@@ -298,6 +304,11 @@ class MyGUI():
 
     def consulterTraitement(self):
         pass
+
+
+    def on_closing_subwindow(self,subwindow,root):
+        subwindow.destroy()
+        root.deiconify()
 
 
 if __name__ == '__main__':
