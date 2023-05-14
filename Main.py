@@ -6,6 +6,7 @@ class MyGUI():
 
 
     def __init__(self,cursor,connection):
+        """Initializes the GUI"""
 
         self.cursor = cursor
         self.connection = connection
@@ -19,18 +20,9 @@ class MyGUI():
         self.filemenu.add_command(label="Close", command=self.on_closing)
 
         self.queriesmenu = tk.Menu(self.root, tearoff=0)
-        #for i in range(1,11):
-        #    self.queriesmenu.add_command(label=f"Query {i}", command=lambda: self.launch_query(i))
-        self.queriesmenu.add_command(label=f"Query 1", command=lambda: self.launch_query(1))
-        self.queriesmenu.add_command(label=f"Query 2", command=lambda: self.launch_query(2))
-        self.queriesmenu.add_command(label=f"Query 3", command=lambda: self.launch_query(3))
-        self.queriesmenu.add_command(label=f"Query 4", command=lambda: self.launch_query(4))
-        self.queriesmenu.add_command(label=f"Query 5", command=lambda: self.launch_query(5))
-        self.queriesmenu.add_command(label=f"Query 6", command=lambda: self.launch_query(6))
-        self.queriesmenu.add_command(label=f"Query 7", command=lambda: self.launch_query(7))
-        self.queriesmenu.add_command(label=f"Query 8", command=lambda: self.launch_query(8))
-        self.queriesmenu.add_command(label=f"Query 9", command=lambda: self.launch_query(9))
-        self.queriesmenu.add_command(label=f"Query 10", command=lambda: self.launch_query(10))
+        for i in range(1,11):
+            command = self.createQueryCommand(i)
+            self.queriesmenu.add_command(label=f"Query {i}", command=command)
     
         self.menubar = tk.Menu(self.root)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -39,16 +31,6 @@ class MyGUI():
 
         self.text = tk.Label(self.root, text="Connection", font=("Helvetica", 16), pady=20)
         self.text.pack()
-
-        #self.entryUser = tk.Entry(self.root, width=30, justify="center")
-        #self.entryUser.insert(0, "Username")
-        #self.entryUser.bind("<FocusIn>", lambda event, arg="Username": self.clear_default_entry(event, arg))
-        #self.entryUser.pack(pady=10)
-#
-        #self.entryPassword = tk.Entry(self.root, width=30, justify="center")
-        #self.entryPassword.insert(0, "Password")
-        #self.entryPassword.bind("<FocusIn>", lambda event, arg="Password": self.clear_default_entry(event, arg))
-        #self.entryPassword.pack(pady=10)
 
         self.entryNISS = tk.Entry(self.root, width=30, justify="center")
         self.entryNISS.insert(0, "54723498984")
@@ -72,70 +54,41 @@ class MyGUI():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.root.destroy()
 
+    
+    def createQueryCommand(self, i):
+        return lambda: self.launch_query(i)
+
 
     def launch_query(self,number):
         """Launches the query"""
+
+        query_data = {
+            1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": [{"label": "DCI", "default_value": "DCI"}]},
+            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": [{"label": "specialite", "default_value": "specialite"}]},
+            3: {"description": "La spécialité de médecins pour laquelle les médecins prescrivent le plus de médicaments"},
+            4: {"description": "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé", "entries": [{"label": "NomCommercial", "default_value": "NomCommercial"}, {"label": "Date De Prescription (YYYY-MM-DD)", "default_value": "Date De Prescription (YYYY-MM-DD)"}]},
+            5: {"description": "Tous les patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu’un patient suive bien un traitement chronique", "entries": [{"label": "DCI", "default_value": "DCI"}]},
+            6: {"description": "La liste des médecins ayant prescrit des médicaments ne relevant pas de leur spécialité"},
+            7: {"description": "Pour chaque décennie entre 1950 et 2020,(1950−59,1960−69,...),le médicament le plus consommé par des patients nés durant cette décennie"},
+            8: {"description": "Quelle est la pathologie la plus diagnostiquée"},
+            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament ", "entries": [{"label": "NISS", "default_value": "NISS"}]},
+            10: {"description": "La liste de médicament n’étant plus prescrit depuis une date spécifique", "entries": [{"label": "Date de prescription (YYYY-MM-DD)", "default_value": "Date de prescription (YYYY-MM-DD)"}]}
+        }
+        data = query_data[number]
+
         new_window = tk.Toplevel(self.root)
         new_window.title(f"Query {number}")
         new_window.geometry("600x600")
-        entry1 = tk.Entry(new_window, width=30, justify="center")
-        entry2 = tk.Entry(new_window, width=30, justify="center")
-        entriesToShow = []
-        match number:
-            case 1:
-                description = "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement."
-                
-                entry1.insert(0, "DCI")
-                entry1.bind("<FocusIn>", lambda event, arg="DCI": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
-            case 2:
-                description = "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes"
-                
-                entry1.insert(0, "specialite")
-                entry1.bind("<FocusIn>", lambda event, arg="specialite": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
-            case 3:
-                description = "La spécialité de médecins pour laquelle les médecins prescrivent le plus de médicaments"
-            case 4:
-                description = "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé"
-                
-                entry1.insert(0, "NomCommercial")
-                entry1.bind("<FocusIn>", lambda event, arg="NomCommercial": self.clear_default_entry(event, arg))
-                entry2.insert(0, "Date De Prescription (YYYY-MM-DD)")
-                entry2.bind("<FocusIn>", lambda event, arg="Date De Prescription (YYYY-MM-DD)": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
-                entriesToShow.append(entry2)
-            case 5:
-                description = "Tous les  patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu’un patient suive bien un traitement chronique"
-                
-                entry1.insert(0, "DCI")
-                entry1.bind("<FocusIn>", lambda event, arg="DCI": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
-            case 6:
-                description = "La liste des médecins ayant prescrit des médicaments ne relevant pas de leur spécialité"
-            case 7:
-                description = "Pour chaque décennie entre 1950 et 2020,(1950−59,1960−69,...),le médicament le plus consommé par des patients nés durant cette décennie"
-            case 8:
-                description = "Quelle est la pathologie la plus diagnostiquée"
-            case 9:
-                description = "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament "
-
-                entry1.insert(0, "NISS")
-                entry1.bind("<FocusIn>", lambda event, arg="NISS": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
-            case 10:
-                description = "La liste de médicament n’étant plus prescrit depuis une date spécifique"
-
-                entry1.insert(0, "Date de prescription (YYYY-MM-DD)")
-                entry1.bind("<FocusIn>", lambda event, arg="Date de prescription (YYYY-MM-DD)": self.clear_default_entry(event, arg))
-                entriesToShow.append(entry1)
 
         text = tk.Text(new_window, height=5, width=50,wrap="word")
-        text.insert(tk.END,description)
+        text.insert(tk.END, data["description"])
         text.configure(state="disabled")
         text.pack()
         
-        for entry in entriesToShow:
+        for entry_data  in data.get("entries",[]):
+            entry = tk.Entry(new_window, width=30, justify="center")
+            entry.insert(0, entry_data.get("default_value", ""))
+            entry.bind("<FocusIn>", lambda event, arg=entry_data["label"]: self.clear_default_entry(event, arg))
             entry.pack(pady=10)
 
         button = tk.Button(new_window, text="Launch", width=20, command=lambda: self.launch_quary(number,self.cursor,[entry.get() for entry in entriesToShow]))
@@ -232,6 +185,7 @@ class MyGUI():
 
 
     def changeMedecin(self):
+        """Opens a window to change the medecin"""
         self.cursor.execute(f"""SELECT INAMI,employeNom,specialite
                                 FROM Medecin
                                 WHERE INAMI !={self.medecinDeReferenceINAMI}"""
@@ -260,6 +214,7 @@ class MyGUI():
 
     
     def changeMedecinQuary(self,medecin):
+        """Changes the medecin in the database"""
         self.cursor.execute(f"""UPDATE Patient
                                 SET medecinDeReferenceINAMI = {medecin[0]}
                                 WHERE NISS = {self.NISS}"""
@@ -270,6 +225,7 @@ class MyGUI():
 
 
     def changePharmacien(self):
+        """Opens a window to change the pharmacien"""
         self.cursor.execute(f"""SELECT INAMI,employeNom
                                 FROM Pharmacien
                                 WHERE INAMI !={self.pharmacienDeReferenceINAMI}"""
@@ -298,6 +254,7 @@ class MyGUI():
 
     
     def changePharmacienQuary(self,pharmacien):
+        """Changes the pharmacien in the database"""
         self.cursor.execute(f"""UPDATE Patient
                                 SET pharmacienDeReferenceINAMI = {pharmacien[0]}
                                 WHERE NISS = {self.NISS}"""
@@ -308,10 +265,12 @@ class MyGUI():
     
 
     def consulterInfoMed(self):
+        """Opens a window to consult the medical information of the client"""
         pass
 
 
     def consulterTraitement(self):
+        """Opens a window to consult the treatments of the client"""
         pass
 
 
