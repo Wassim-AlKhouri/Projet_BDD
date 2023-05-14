@@ -194,14 +194,14 @@ if __name__ == "__main__":
         database='groupAX_DB'
     )
     cursor = cnx.cursor()
-    insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données\diagnostiques.xml",cursor)
-    insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données\pharmaciens.xml",cursor)
-    insert_medecin("D:\documents\GitHub\Projet_BDD\Données\medecins.xml",cursor)
-    insert_patient("D:\documents\GitHub\Projet_BDD\Données\patients.xml",cursor)
-    insert_specialite("D:\documents\GitHub\Projet_BDD\Données\specialites.xml",cursor)
-    insert_csv("D:\documents\GitHub\Projet_BDD\Données\dossiers_patients.csv",cursor)
-    insert_csv("D:\documents\GitHub\Projet_BDD\Données\medicaments.csv",cursor)
-    insert_csv("D:\documents\GitHub\Projet_BDD\Données\pathologies.csv",cursor)
+    #insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données\diagnostiques.xml",cursor)
+    #insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données\pharmaciens.xml",cursor)
+    #insert_medecin("D:\documents\GitHub\Projet_BDD\Données\medecins.xml",cursor)
+    #insert_patient("D:\documents\GitHub\Projet_BDD\Données\patients.xml",cursor)
+    #insert_specialite("D:\documents\GitHub\Projet_BDD\Données\specialites.xml",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données\dossiers_patients.csv",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données\medicaments.csv",cursor)
+    #insert_csv("D:\documents\GitHub\Projet_BDD\Données\pathologies.csv",cursor)
 
     ### TESTING ###
     #cursor.execute("""SELECT s.specialiteNom
@@ -212,9 +212,14 @@ if __name__ == "__main__":
     #                GROUP BY s.specialiteNom
     #                ORDER BY COUNT(*) DESC
     #                LIMIT 1;""")
-    #rows = cursor.fetchall()
-    #for row in rows:
-    #    print(row)
+    cursor.execute(f"""SELECT employeNom,INAMI
+                        FROM Pharmacien 
+                        """
+                )
+    rows = cursor.fetchall()
+    for row in rows:
+        if(row[1]  == 64418437018) :
+            print(row)
     #print("Number of rows: %s" % cursor.rowcount)
 
     cnx.commit()

@@ -3,8 +3,13 @@ from tkinter import messagebox
 import mysql.connector
 
 class MyGUI():
-    def __init__(self,cursor):
+
+
+    def __init__(self,cursor,connection):
+
         self.cursor = cursor
+        self.connection = connection
+
         self.root = tk.Tk()
         self.root.geometry("400x500")
         self.root.title("Groupe AX")
@@ -35,20 +40,38 @@ class MyGUI():
         self.text = tk.Label(self.root, text="Connection", font=("Helvetica", 16), pady=20)
         self.text.pack()
 
-        self.entryUser = tk.Entry(self.root, width=30, justify="center")
-        self.entryUser.insert(0, "Username")
-        self.entryUser.bind("<FocusIn>", lambda event, arg="Username": self.clear_default_entry(event, arg))
-        self.entryUser.pack(pady=10)
+        #self.entryUser = tk.Entry(self.root, width=30, justify="center")
+        #self.entryUser.insert(0, "Username")
+        #self.entryUser.bind("<FocusIn>", lambda event, arg="Username": self.clear_default_entry(event, arg))
+        #self.entryUser.pack(pady=10)
+#
+        #self.entryPassword = tk.Entry(self.root, width=30, justify="center")
+        #self.entryPassword.insert(0, "Password")
+        #self.entryPassword.bind("<FocusIn>", lambda event, arg="Password": self.clear_default_entry(event, arg))
+        #self.entryPassword.pack(pady=10)
 
-        self.entryPassword = tk.Entry(self.root, width=30, justify="center")
-        self.entryPassword.insert(0, "Password")
-        self.entryPassword.bind("<FocusIn>", lambda event, arg="Password": self.clear_default_entry(event, arg))
-        self.entryPassword.pack(pady=10)
+        self.entryNISS = tk.Entry(self.root, width=30, justify="center")
+        self.entryNISS.insert(0, "54723498984")
+        self.entryNISS.bind("<FocusIn>", lambda event, arg="NISS": self.clear_default_entry(event, arg))
+        self.entryNISS.pack(pady=10)
 
         self.button = tk.Button(self.root, text="Connect", width=20, command=self.connect)
         self.button.pack(pady=10)
 
         self.root.mainloop()
+
+
+    def clear_default_entry(self, event, arg):
+        """Clears the default text in the entry widget when clicked on"""
+        if event.widget.get() == arg:
+            event.widget.delete(0, tk.END)
+
+
+    def on_closing(self):
+        """Asks the user if he wants to quit the application"""
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.root.destroy()
+
 
     def launch_query(self,number):
         """Launches the query"""
@@ -117,21 +140,7 @@ class MyGUI():
 
         button = tk.Button(new_window, text="Launch", width=20, command=lambda: self.launch_quary(number,self.cursor,[entry.get() for entry in entriesToShow]))
         button.pack(pady=10)
-        
 
-    def connect(self):
-        """Connects to the database"""
-        pass
-
-    def clear_default_entry(self, event, arg):
-        """Clears the default text in the entry widget when clicked on"""
-        if event.widget.get() == arg:
-            event.widget.delete(0, tk.END)
-
-    def on_closing(self):
-        """Asks the user if he wants to quit the application"""
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.root.destroy()
 
     def launch_quary(self,number,cursor,args):
         """
@@ -156,6 +165,141 @@ class MyGUI():
         listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
 
 
+    def connect(self):
+        """Connects to the database"""
+        self.NISS = self.entryNISS.get()
+
+        self.cursor.execute(f"""SELECT nom,prenom,medecinDeReferenceINAMI,pharmacienDeReferenceINAMI 
+                                FROM Patient 
+                                WHERE NISS ={self.NISS}"""
+                           )
+        infoPatient = self.cursor.fetchone()
+
+        self.medecinDeReferenceINAMI = infoPatient[2]
+        self.pharmacienDeReferenceINAMI = infoPatient[3]
+
+        self.cursor.execute(f"""SELECT employeNom,specialite 
+                                FROM Medecin 
+                                WHERE INAMI ={self.medecinDeReferenceINAMI}"""
+                           )
+        infoMedecin = self.cursor.fetchone()
+        
+        self.cursor.execute(f"""SELECT employeNom 
+                                FROM Pharmacien 
+                                WHERE INAMI ={self.pharmacienDeReferenceINAMI}"""
+                           )
+        infoPharmacien = self.cursor.fetchone()
+        
+        if(infoPatient == None or infoMedecin == None or infoPharmacien == None):
+            messagebox.showerror("Error", "Les informations n'ont pas été trouvées")
+            return
+
+        self.clientWindow = tk.Toplevel(self.root)
+        self.clientWindow.title(f"Client {infoPatient[0]}")
+        self.clientWindow.geometry("500x500")
+
+        clientInfo = tk.Text(self.clientWindow, height=7, width=50,wrap="word")
+
+        clientInfo.insert(tk.END,"Nom : " + infoPatient[0] + "\n")
+        clientInfo.insert(tk.END,"Prenom : " + infoPatient[1] + "\n")
+        
+        clientInfo.insert(tk.END,"Medecin de reference :" + "\n")
+        clientInfo.insert(tk.END," Nom : " + infoMedecin[0] + "\n")
+        clientInfo.insert(tk.END," Specialite : " + infoMedecin[1] + "\n")
+        
+        clientInfo.insert(tk.END,"Pharmacien de reference :" + "\n")
+        clientInfo.insert(tk.END," Nom : " + infoPharmacien[0] + "\n")
+
+        clientInfo.configure(state="disabled")
+        clientInfo.pack()
+        
+        buttonChangerMedecin = tk.Button(self.clientWindow, text="Changer de medecin", width=30, command = self.changeMedecin)
+        buttonChangerMedecin.pack(pady=10)
+
+        buttonChangerPharmacien = tk.Button(self.clientWindow, text="Changer de pharmacien", width=30, command = self.changePharmacien)
+        buttonChangerPharmacien.pack(pady=10)
+
+        buttonConsulterInfoMed = tk.Button(self.clientWindow, text="Consulter les informations médicales", width=30, command = self.consulterInfoMed)
+        buttonConsulterInfoMed.pack(pady=10)
+
+        buttonConsulterTraitement = tk.Button(self.clientWindow, text="Consulter les traitements", width=30, command = self.consulterTraitement)
+        buttonConsulterTraitement.pack(pady=10)
+
+
+    def changeMedecin(self):
+        self.cursor.execute(f"""SELECT INAMI,employeNom,specialite
+                                FROM Medecin
+                                WHERE INAMI !={self.medecinDeReferenceINAMI}"""
+                            )
+        infoMedecin = self.cursor.fetchall()
+
+        self.changeWindow = tk.Toplevel(self.clientWindow)
+        self.changeWindow.title(f"Changer de medecin")
+        self.changeWindow.geometry("500x500")
+
+        label = tk.Label(self.changeWindow, text="Choisissez un medecin")
+        label.pack(pady=10)
+
+        listbox = tk.Listbox(self.changeWindow,justify="center")
+        for medecin in infoMedecin:
+            listbox.insert(tk.END, medecin)
+        listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
+
+        button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changeMedecinQuary(listbox.get(tk.ACTIVE)))
+        button.pack(pady=10)
+
+    
+    def changeMedecinQuary(self,medecin):
+        self.cursor.execute(f"""UPDATE Patient
+                                SET medecinDeReferenceINAMI = {medecin[0]}
+                                WHERE NISS = {self.NISS}"""
+                            )
+        self.medecinDeReferenceINAMI = medecin[0]
+        self.connection.commit()
+        self.changeWindow.destroy()
+
+
+    def changePharmacien(self):
+        self.cursor.execute(f"""SELECT INAMI,employeNom
+                                FROM Pharmacien
+                                WHERE INAMI !={self.pharmacienDeReferenceINAMI}"""
+                            )
+        infoPharmacien = self.cursor.fetchall()
+
+        self.changeWindow = tk.Toplevel(self.clientWindow)
+        self.changeWindow.title(f"Changer de pharmacien")
+        self.changeWindow.geometry("500x500")
+
+        label = tk.Label(self.changeWindow, text="Choisissez un pharmacien")
+        label.pack(pady=10)
+
+        listbox = tk.Listbox(self.changeWindow,justify="center")
+        for pharmacien in infoPharmacien:
+            listbox.insert(tk.END, pharmacien)
+        listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
+
+        button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changePharmacienQuary(listbox.get(tk.ACTIVE)))
+        button.pack(pady=10)
+
+    
+    def changePharmacienQuary(self,pharmacien):
+        self.cursor.execute(f"""UPDATE Patient
+                                SET pharmacienDeReferenceINAMI = {pharmacien[0]}
+                                WHERE NISS = {self.NISS}"""
+                            )
+        self.pharmacienDeReferenceINAMI = pharmacien[0]
+        self.connection.commit()
+        self.changeWindow.destroy()
+    
+
+    def consulterInfoMed(self):
+        pass
+
+
+    def consulterTraitement(self):
+        pass
+
+
 if __name__ == '__main__':
     cnx = mysql.connector.connect(
         user='root', 
@@ -164,5 +308,5 @@ if __name__ == '__main__':
         database='groupAX_DB'
     )
     cursor = cnx.cursor()
-    myGUI = MyGUI(cursor)
+    myGUI = MyGUI(cursor, cnx)
 
