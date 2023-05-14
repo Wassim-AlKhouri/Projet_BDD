@@ -13,7 +13,7 @@ class MyGUI():
         self.root = tk.Tk()
         self.root.geometry("400x500")
         self.root.title("Groupe AX")
-        #self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.filemenu = tk.Menu(self.root, tearoff=0)
         self.filemenu.add_command(label="Close", command=self.on_closing)
@@ -198,7 +198,7 @@ class MyGUI():
         self.clientWindow = tk.Toplevel(self.root)
         self.clientWindow.title(f"Client {infoPatient[0]}")
         self.clientWindow.geometry("500x500")
-        self.clientWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.clientWindow,self.root))
+        self.clientWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         clientInfo = tk.Text(self.clientWindow, height=7, width=50,wrap="word")
 
@@ -227,6 +227,9 @@ class MyGUI():
         buttonConsulterTraitement = tk.Button(self.clientWindow, text="Consulter les traitements", width=30, command = self.consulterTraitement)
         buttonConsulterTraitement.pack(pady=10)
 
+        buttonReturn = tk.Button(self.clientWindow, text="Retour", width=30, command = lambda: self.returnToParentWindow(self.clientWindow,self.root))
+        buttonReturn.place(relx=0.5, rely=0.9, anchor='center')
+
 
     def changeMedecin(self):
         self.cursor.execute(f"""SELECT INAMI,employeNom,specialite
@@ -239,7 +242,7 @@ class MyGUI():
         self.changeWindow = tk.Toplevel(self.clientWindow)
         self.changeWindow.title("Changer de medecin")
         self.changeWindow.geometry("500x500")
-        self.changeWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.changeWindow,self.clientWindow))
+        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         label = tk.Label(self.changeWindow, text="Choisissez un medecin")
         label.pack(pady=10)
@@ -251,6 +254,9 @@ class MyGUI():
 
         button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changeMedecinQuary(listbox.get(tk.ACTIVE)))
         button.pack(pady=10)
+
+        buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.changeWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
 
     
     def changeMedecinQuary(self,medecin):
@@ -274,7 +280,7 @@ class MyGUI():
         self.changeWindow = tk.Toplevel(self.clientWindow)
         self.changeWindow.title("Changer de pharmacien")
         self.changeWindow.geometry("500x500")
-        self.changeWindow.protocol("WM_DELETE_WINDOW", lambda: self.on_closing_subwindow(self.changeWindow,self.clientWindow))
+        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         label = tk.Label(self.changeWindow, text="Choisissez un pharmacien")
         label.pack(pady=10)
@@ -286,6 +292,9 @@ class MyGUI():
 
         button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changePharmacienQuary(listbox.get(tk.ACTIVE)))
         button.pack(pady=10)
+
+        buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.changeWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
 
     
     def changePharmacienQuary(self,pharmacien):
@@ -306,7 +315,7 @@ class MyGUI():
         pass
 
 
-    def on_closing_subwindow(self,subwindow,root):
+    def returnToParentWindow(self,subwindow,root):
         subwindow.destroy()
         root.deiconify()
 
