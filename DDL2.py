@@ -71,14 +71,14 @@ cursor.execute("""CREATE TABLE Patient (
 cursor.execute("""CREATE TABLE PatientEmail (
                 NISS DECIMAL(12,0) NOT NULL REFERENCES Patient(NISS),
                 email VARCHAR(50) NOT NULL,
-                PRIMARY KEY (NISS, email) 
-                )""") #besoin de email ?
+                PRIMARY KEY (NISS) 
+                )""")
 
 cursor.execute("""CREATE TABLE PatientGSM (
                 NISS DECIMAL(12,0) NOT NULL REFERENCES Patient(NISS),
                 numeroGSM VARCHAR(20) NOT NULL,
-                PRIMARY KEY (NISS, numeroGSM)
-                )""") # besoin de numeroGSM ?
+                PRIMARY KEY (NISS)
+                )""")
 
 cursor.execute("""CREATE TABLE DossierPatient (
                 NISS DECIMAL(12,0) REFERENCES Patient(NISS),

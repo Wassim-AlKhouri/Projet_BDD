@@ -3,7 +3,7 @@ WITH recursive years AS (
   UNION ALL
   SELECT year + 10
   FROM years
-  WHERE year < 2023 
+  WHERE year < YEAR(CURRENT_DATE()) 
 )
 SELECT year, medicamentNomCommercial
 FROM (

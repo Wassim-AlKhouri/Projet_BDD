@@ -218,7 +218,7 @@ if __name__ == "__main__":
                 )
     rows = cursor.fetchall()
     for row in rows:
-        if(row[1]  == 64418437018) :
+        if(row[1]  == 142381096286) :
             print(row)
     #print("Number of rows: %s" % cursor.rowcount)
 
