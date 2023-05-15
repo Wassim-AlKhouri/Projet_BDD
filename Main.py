@@ -89,16 +89,12 @@ class MyGUI():
             entry.pack(pady=10)
             entries.append(entry)
 
-        button = tk.Button(new_window, text="Launch", width=20, command=lambda: self.launch_quary(number,self.cursor,[entry.get() for entry in entries]))
+        button = tk.Button(new_window, text="Launch", width=20, command=lambda: self.executeQuary(number,self.cursor,[entry.get() for entry in entries]))
         button.pack(pady=10)
 
 
-    def launch_quary(self,number,cursor,args):
-        """
-        Launches the query where number is the number of the query
-        and args are the arguments of the query.
-        returns the result
-        """
+    def executeQuary(self,number,cursor,args):
+        """Executes the query number with the given arguments."""
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
         named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
