@@ -97,8 +97,9 @@ class MyGUI():
         """Executes the query number with the given arguments."""
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
-        named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
-        sql = sql.format(**named_args)
+        if len(args) == 0:
+            named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
+            sql = sql.format(**named_args)
         cursor.execute(sql)
         results = cursor.fetchall()
 
