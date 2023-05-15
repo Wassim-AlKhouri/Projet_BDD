@@ -162,6 +162,7 @@ class MyGUI():
         infoPatient, infoMedecin, infoPharmacien = self.getPatientInfo()
         self.updateClientInfo(infoPatient, infoMedecin, infoPharmacien)
 
+
     def updateClientInfo(self, infoPatient, infoMedecin, infoPharmacien):
         """Updates the info of the client"""
         self.clientInfo.configure(state="normal")
@@ -172,13 +173,14 @@ class MyGUI():
         self.clientInfo.insert(tk.END,"Prenom : " + infoPatient[1] + "\n")
         
         self.clientInfo.insert(tk.END,"Medecin de reference :" + "\n")
-        self.clientInfo.insert(tk.END," Nom : " + infoMedecin[0] + "\n")
-        self.clientInfo.insert(tk.END," Specialite : " + infoMedecin[1] + "\n")
+        self.clientInfo.insert(tk.END," - Nom : " + infoMedecin[0] + "\n")
+        self.clientInfo.insert(tk.END," - Specialite : " + infoMedecin[1] + "\n")
         
         self.clientInfo.insert(tk.END,"Pharmacien de reference :" + "\n")
-        self.clientInfo.insert(tk.END," Nom : " + infoPharmacien[0] + "\n")
+        self.clientInfo.insert(tk.END," - Nom : " + infoPharmacien[0] + "\n")
 
         self.clientInfo.configure(state="disabled")
+
 
     def getPatientInfo(self):
         """Gets the info of the patient from the database"""
@@ -262,7 +264,35 @@ class MyGUI():
 
     def consulterTraitement(self):
         """Opens a window to consult the treatments of the client"""
-        pass
+        self.cursor.execute(f"""SELECT *
+                                FROM DossierPatient
+                                WHERE NISS = {self.NISS}
+                                ORDER BY datePrescription DESC"""
+                            )
+        infoDossier = self.cursor.fetchall()
+        
+        self.clientWindow.withdraw()
+        self.traitementWindow = tk.Toplevel(self.clientWindow)
+        self.traitementWindow.title("Traitements")
+        self.traitementWindow.geometry("500x500")
+        self.traitementWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        label = tk.Label(self.traitementWindow, text="Traitements :")
+        label.pack(pady=10)
+
+        text = tk.Text(self.traitementWindow, height=20, width=50)
+        text.pack(pady=10)
+        for traitement in infoDossier:
+            text.insert(tk.END, f"{traitement[7]}, {traitement[5]} : \n")
+            text.insert(tk.END, f"  - Medicament DCI : {traitement[6]} \n")
+            text.insert(tk.END, f"  - Medecin : {traitement[1]} \n")
+            text.insert(tk.END, f"  - Pharmacien : {traitement[3]} \n")
+            text.insert(tk.END, f"  - Durée : {traitement[9]} \n")
+            text.insert(tk.END, f"  - Date de vente : {traitement[8]} \n")
+        text.configure(state="disabled")
+
+        buttonReturn = tk.Button(self.traitementWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.traitementWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
 
 
     def returnToParentWindow(self,subwindow,root):
