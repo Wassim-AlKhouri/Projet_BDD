@@ -59,16 +59,16 @@ class MyGUI():
         """Launches the query"""
 
         query_data = {
-            1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": [{"label": "DCI", "default_value": "DCI"}]},
-            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": [{"label": "specialite", "default_value": "specialite"}]},
+            1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": ["DCI"]},
+            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": ["specialite"]},
             3: {"description": "La spécialité de médecins pour laquelle les médecins prescrivent le plus de médicaments"},
-            4: {"description": "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé", "entries": [{"label": "NomCommercial", "default_value": "NomCommercial"}, {"label": "Date De Prescription (YYYY-MM-DD)", "default_value": "Date De Prescription (YYYY-MM-DD)"}]},
-            5: {"description": "Tous les patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu'un patient suive bien un traitement chronique", "entries": [{"label": "DCI", "default_value": "DCI"}]},
+            4: {"description": "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé", "entries": ["NomCommercial","Date De Prescription (YYYY-MM-DD)"]},
+            5: {"description": "Tous les patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu'un patient suive bien un traitement chronique", "entries": ["DCI"]},
             6: {"description": "La liste des médecins ayant prescrit des médicaments ne relevant pas de leur spécialité"},
             7: {"description": "Pour chaque décennie entre 1950 et 2020,(1950-59,1960-69,...),le médicament le plus consommé par des patients nés durant cette décennie"},
             8: {"description": "Quelle est la pathologie la plus diagnostiquée"},
-            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament ", "entries": [{"label": "NISS", "default_value": "NISS"}]},
-            10: {"description": "La liste de médicament n'étant plus prescrit depuis une date spécifique", "entries": [{"label": "Date de prescription (YYYY-MM-DD)", "default_value": "Date de prescription (YYYY-MM-DD)"}]}
+            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament ", "entries": ["NISS"]},
+            10: {"description": "La liste de médicament n'étant plus prescrit depuis une date spécifique", "entries": ["Date de prescription (YYYY-MM-DD)"]}
         }
         data = query_data[number]
 
@@ -83,9 +83,9 @@ class MyGUI():
         
         entries = []
         for entry_data  in data.get("entries",[]):
-            entry = tk.Entry(new_window, width=30, justify="center")
-            entry.insert(0, entry_data.get("default_value", ""))
-            entry.bind("<FocusIn>", lambda event, arg=entry_data["label"]: self.clear_default_entry(event, arg))
+            entry = tk.Entry(new_window, width=35, justify="center")
+            entry.insert(0, entry_data)
+            entry.bind("<FocusIn>", lambda event, arg=entry_data: self.clear_default_entry(event, arg))
             entry.pack(pady=10)
             entries.append(entry)
 
