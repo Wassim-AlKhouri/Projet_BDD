@@ -296,6 +296,9 @@ class MyGUI():
         text.insert(tk.END,f"    - Specialite : {infoMedecin[1]}\n")
         text.insert(tk.END,f"Pharmacien de reference :\n")
         text.insert(tk.END,f"    - Nom : {infoPharmacien[0]}\n")
+
+        buttonReturn = tk.Button(self.infoWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.infoWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
         
 
     def consulterTraitement(self):
