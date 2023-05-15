@@ -16,16 +16,12 @@ class MyGUI():
         self.root.title("Groupe AX")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.filemenu = tk.Menu(self.root, tearoff=0)
-        self.filemenu.add_command(label="Close", command=self.on_closing)
-
         self.queriesmenu = tk.Menu(self.root, tearoff=0)
         for i in range(1,11):
             command = self.createQueryCommand(i)
             self.queriesmenu.add_command(label=f"Query {i}", command=command)
     
         self.menubar = tk.Menu(self.root)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
         self.menubar.add_cascade(label="Queries", menu=self.queriesmenu)
         self.root.config(menu=self.menubar)
 
