@@ -1,4 +1,4 @@
-<medecins>
+<root>
 
   <medecin>
     <inami>274140166745</inami>
@@ -2465,4 +2465,4 @@
     <telephone>+32983606006934</telephone>
   </medecin>
 
-</medecins>
+</root>

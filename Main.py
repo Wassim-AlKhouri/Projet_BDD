@@ -7,32 +7,32 @@ class MyGUI():
 
     def __init__(self,cursor,connection):
         """Initializes the GUI"""
-
+        ### INTI cursor and connection ###
         self.cursor = cursor
         self.connection = connection
-
+        ### Create the root window ###
         self.root = tk.Tk()
         self.root.geometry("400x500")
         self.root.title("Groupe AX")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the menu with the queries ###
         self.queriesmenu = tk.Menu(self.root, tearoff=0)
         for i in range(1,11):
             command = self.createQueryCommand(i)
             self.queriesmenu.add_command(label=f"Query {i}", command=command)
-    
         self.menubar = tk.Menu(self.root)
         self.menubar.add_cascade(label="Queries", menu=self.queriesmenu)
         self.root.config(menu=self.menubar)
-
+        ### Create the connection frame ###
+        ## Connection text ##
         self.text = tk.Label(self.root, text="Connection", font=("Helvetica", 16), pady=20)
         self.text.pack()
-
+        ## Entry ##
         self.entryNISS = tk.Entry(self.root, width=30, justify="center")
         self.entryNISS.insert(0, "54723498984")
         self.entryNISS.bind("<FocusIn>", lambda event, arg="NISS": self.clear_default_entry(event, arg))
         self.entryNISS.pack(pady=10)
-
+        ## Button ##
         self.button = tk.Button(self.root, text="Connect", width=20, command=self.connect)
         self.button.pack(pady=10)
 
@@ -57,7 +57,6 @@ class MyGUI():
 
     def launch_query(self,number):
         """Launches the query"""
-
         query_data = {
             1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": ["DCI"]},
             2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": ["specialite"]},
@@ -71,16 +70,17 @@ class MyGUI():
             10: {"description": "La liste de médicament n'étant plus prescrit depuis une date spécifique", "entries": ["Date de prescription (YYYY-MM-DD)"]}
         }
         data = query_data[number]
-
+        ### Create the new window ###
         new_window = tk.Toplevel(self.root)
         new_window.title(f"Query {number}")
         new_window.geometry("600x600")
-
+        ### Create the widgets ###
+        ## Description ##
         text = tk.Text(new_window, height=5, width=50,wrap="word")
         text.insert(tk.END, data["description"])
         text.configure(state="disabled")
         text.pack()
-        
+        ## Entries ##
         entries = []
         for entry_data  in data.get("entries",[]):
             entry = tk.Entry(new_window, width=35, justify="center")
@@ -88,13 +88,14 @@ class MyGUI():
             entry.bind("<FocusIn>", lambda event, arg=entry_data: self.clear_default_entry(event, arg))
             entry.pack(pady=10)
             entries.append(entry)
-
+        ## Button ##
         button = tk.Button(new_window, text="Launch", width=20, command=lambda: self.executeQuary(number,self.cursor,[entry.get() for entry in entries]))
         button.pack(pady=10)
 
 
     def executeQuary(self,number,cursor,args):
         """Executes the query number with the given arguments."""
+        ### Get the query and execute it ###
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
         if len(args) == 0:
@@ -102,11 +103,11 @@ class MyGUI():
             sql = sql.format(**named_args)
         cursor.execute(sql)
         results = cursor.fetchall()
-
+        ### Create the new window ###
         result_window = tk.Toplevel(self.root)
         result_window.title(f"Query {number} result")
         result_window.geometry("600x600")
-        
+        ### Create the list ###
         listbox = tk.Listbox(result_window,justify="center")
         for result in results:
             listbox.insert(tk.END, result)
@@ -116,7 +117,7 @@ class MyGUI():
     def connect(self):
         """Connects to the database"""
         self.NISS = self.entryNISS.get()
-
+        ### Get the patient info from the database ###
         infoPatient, infoMedecin, infoPharmacien = self.getPatientInfo()
         if(infoPatient == None or infoMedecin == None or infoPharmacien == None):
             messagebox.showerror("Error", "Les informations n'ont pas été trouvées")
@@ -126,32 +127,33 @@ class MyGUI():
             return
 
         self.root.withdraw()
-
+        ### Create the new window ###
         self.clientWindow = tk.Toplevel(self.root)
         self.clientWindow.title(f"Client {infoPatient[0]}")
         self.clientWindow.geometry("500x500")
         self.clientWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the widgets ###
+        ## Patient info ##
         self.clientInfo = tk.Text(self.clientWindow, height=7, width=50,wrap="word")
         self.clientInfo.pack()
-
         self.updateClientInfo(infoPatient, infoMedecin, infoPharmacien)
-        
+        ## Buttons ##
+        # Change Medecin #
         buttonChangerMedecin = tk.Button(self.clientWindow, text="Changer de medecin", width=30, command = lambda:self.changeMedecinPharmacien("medecin"))
         buttonChangerMedecin.pack(pady=10)
-
+        # Change Pharmacien #
         buttonChangerPharmacien = tk.Button(self.clientWindow, text="Changer de pharmacien", width=30, command = lambda:self.changeMedecinPharmacien("pharmacien"))
         buttonChangerPharmacien.pack(pady=10)
-
+        # Consult info #
         buttonConsulterInfoMed = tk.Button(self.clientWindow, text="Consulter les informations du client", width=30, command = self.consulterInfo)
         buttonConsulterInfoMed.pack(pady=10)
-
+        # Consult traitement #
         buttonConsulterTraitement = tk.Button(self.clientWindow, text="Consulter les traitements", width=30, command = self.consulterTraitement)
         buttonConsulterTraitement.pack(pady=10)
-
+        # Consult diagnostic #
         buttonConsulterDiagostic = tk.Button(self.clientWindow, text="Consulter les diagnostics", width=30, command = self.consulterDiagnostic)
         buttonConsulterDiagostic.pack(pady=10)
-
+        # Return #
         buttonReturn = tk.Button(self.clientWindow, text="Retour", width=30, command = lambda: self.returnToParentWindow(self.clientWindow,self.root))
         buttonReturn.place(relx=0.5, rely=0.9, anchor='center')
 
@@ -165,50 +167,48 @@ class MyGUI():
     def updateClientInfo(self, infoPatient, infoMedecin, infoPharmacien):
         """Updates the info of the client"""
         self.clientInfo.configure(state="normal")
-
         self.clientInfo.delete("1.0", tk.END)
-
         self.clientInfo.insert(tk.END,"Nom : " + infoPatient[5] + "\n")
         self.clientInfo.insert(tk.END,"Prenom : " + infoPatient[6] + "\n")
-        
         self.clientInfo.insert(tk.END,"Medecin de reference :" + "\n")
         self.clientInfo.insert(tk.END," - Nom : " + infoMedecin[0] + "\n")
         self.clientInfo.insert(tk.END," - Specialite : " + infoMedecin[1] + "\n")
-        
         self.clientInfo.insert(tk.END,"Pharmacien de reference :" + "\n")
         self.clientInfo.insert(tk.END," - Nom : " + infoPharmacien[0] + "\n")
-
         self.clientInfo.configure(state="disabled")
 
 
     def getPatientInfo(self):
         """Gets the info of the patient from the database"""
+        # Get the info of the patient #
         self.cursor.execute(f"""SELECT * 
                                 FROM Patient 
                                 WHERE NISS ={self.NISS}"""
                            )
         infoPatient = self.cursor.fetchone()
-
+        if(infoPatient == None):
+            return None,None,None
+        
         self.medecinDeReferenceINAMI = infoPatient[3]
         self.pharmacienDeReferenceINAMI = infoPatient[4]
-
+        # Get the info of the medecin #
         self.cursor.execute(f"""SELECT employeNom,specialite 
                                 FROM Medecin 
                                 WHERE INAMI ={self.medecinDeReferenceINAMI}"""
                            )
         infoMedecin = self.cursor.fetchone()
-        
+        # Get the info of the pharmacien #
         self.cursor.execute(f"""SELECT employeNom 
                                 FROM Pharmacien 
                                 WHERE INAMI ={self.pharmacienDeReferenceINAMI}"""
                            )
         infoPharmacien = self.cursor.fetchone()
-        
         return infoPatient,infoMedecin,infoPharmacien
 
 
     def changeMedecinPharmacien(self,type):
         """Opens a window to change the medecin or the pharmacien"""
+        ### Get the info of the medecin/pharmacien ###
         info = {
             "medecin" : "INAMI,employeNom,specialite",
             "pharmacien" : "INAMI,employeNom"
@@ -218,24 +218,26 @@ class MyGUI():
                                 WHERE INAMI !={self.medecinDeReferenceINAMI}"""
                             )
         infoEmploye = self.cursor.fetchall()
-
+        ### Create the new window ###
         self.clientWindow.withdraw()
         self.changeWindow = tk.Toplevel(self.clientWindow)
         self.changeWindow.title(f"Changer de {type}")
         self.changeWindow.geometry("500x500")
         self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the widgets ###
+        ## text ##
         label = tk.Label(self.changeWindow, text=f"Choisissez un {type} :")
         label.pack(pady=10)
-
+        ## listbox ##
         listbox = tk.Listbox(self.changeWindow,justify="center")
         for medecin in infoEmploye:
             listbox.insert(tk.END, medecin)
         listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
-
+        ## buttons ##
+        # Change button #
         button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changeMedecinPharmacienQuary(listbox.get(tk.ACTIVE),type))
         button.pack(pady=10)
-
+        # Return button #
         buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.changeWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
 
@@ -258,67 +260,131 @@ class MyGUI():
 
     def consulterInfo(self):
         """Opens a window to consult the informations of the client"""
-        infoPatient, infoMedecin, infoPharmacien = self.getPatientInfo()
-
+        ### Get the info of the client ###
+        infoPatient,_,_ = self.getPatientInfo()
+        ## Get Email ##
         self.cursor.execute(f"""SELECT *
                                 FROM PatientEmail
                                 WHERE NISS = {self.NISS}"""
                             )
         infoPatientEmail = self.cursor.fetchall()
-        Email = infoPatientEmail[0][1] if infoPatientEmail != [] else "Pas d'email"
-
+        Email = infoPatientEmail[0][1] if infoPatientEmail[0][1] != "None" else "Pas d'email"
+        ## Get GSM ##
         self.cursor.execute(f"""SELECT *
                                 FROM PatientGSM
                                 WHERE NISS = {self.NISS}"""
                             )
         infoPatientGSM = self.cursor.fetchall()
-        GSM = infoPatientGSM[0][1] if infoPatientGSM != [] else "Pas de GSM"
-
+        GSM = infoPatientGSM[0][1] if infoPatientGSM[0][1] != "None" else "Pas de GSM"
+        ### Create the new window ###
         self.clientWindow.withdraw()
         self.infoWindow = tk.Toplevel(self.clientWindow)
         self.infoWindow.title("Informations")
         self.infoWindow.geometry("500x500")
         self.infoWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the widgets ###
+        ## texts ##
+        # Title #
         label = tk.Label(self.infoWindow, text="Informations :")
         label.pack(pady=10)
-
-        text = tk.Text(self.infoWindow, height=11, width=55)
+        # Info #
+        text = tk.Text(self.infoWindow, height=6, width=55)
         text.pack(pady=10)
-        text.insert(tk.END,f"Nom : {infoPatient[5]}\n")
-        text.insert(tk.END,f"Prenom : {infoPatient[6]}\n")
-        text.insert(tk.END,f"Date de naissance : {infoPatient[1]}\n")
-        text.insert(tk.END,f"Genre : {infoPatient[2]}\n")
-        text.insert(tk.END,f"Telephone : {Email}\n")
-        text.insert(tk.END,f"Email : {GSM}\n")
-        text.insert(tk.END,f"Medecin de reference :\n")
-        text.insert(tk.END,f"    - Nom : {infoMedecin[0]}\n")
-        text.insert(tk.END,f"    - Specialite : {infoMedecin[1]}\n")
-        text.insert(tk.END,f"Pharmacien de reference :\n")
-        text.insert(tk.END,f"    - Nom : {infoPharmacien[0]}\n")
-
+        Nom,Prenom,DateNaissance,Genre = infoPatient[5],infoPatient[6],infoPatient[1],infoPatient[2]
+        text.insert(tk.END,f"Nom : {Nom}\n")
+        text.insert(tk.END,f"Prenom : {Prenom}\n")
+        text.insert(tk.END,f"Date de naissance : {DateNaissance}\n")
+        text.insert(tk.END,f"Genre : {Genre}\n")
+        text.insert(tk.END,f"Telephone : {GSM}\n")
+        text.insert(tk.END,f"Email : {Email}\n")
+        ## Buttons ##
+        # Change button #
+        buttonChange = tk.Button(self.infoWindow, text="Changer", width=20, command = lambda: self.changeInfo([Nom,Prenom,DateNaissance,Genre,GSM,Email]))
+        buttonChange.pack(pady=10)
+        # Return button #
         buttonReturn = tk.Button(self.infoWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.infoWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
         
 
+    def changeInfo(self,info):
+        ### Create the new window ###
+        self.infoWindow.withdraw()
+        self.changeInfoWindow = tk.Toplevel(self.infoWindow)
+        self.changeInfoWindow.title("Changer les informations")
+        self.changeInfoWindow.geometry("500x500")
+        self.changeInfoWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
+        ### Create the widgets ###
+        ## Entries ##
+        entries = []
+        for i in info:
+            entry = tk.Entry(self.changeInfoWindow, width=40, justify="center")
+            entry.insert(0,i)
+            entry.pack(pady=10)
+            entries.append(entry)
+        ## Buttons ##
+        # Change button #
+        buttonChange = tk.Button(self.changeInfoWindow, text="Changer", width=20, command = lambda: self.changeInfoQuary(entries))
+        buttonChange.pack(pady=10)
+        # Return button #
+        buttonReturn = tk.Button(self.changeInfoWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.changeInfoWindow,self.infoWindow))
+        buttonReturn.pack(pady=10)
+        
+
+    def changeInfoQuary(self,entries):
+        """Changes the informations of the client in the database"""
+        ### Get the info ###
+        info = []
+        for entry in entries:
+            info.append(entry.get())
+        ### Change the info in the database ###
+        ## Update Patient ##
+        self.cursor.execute(f"""UPDATE Patient
+                                SET nom = '{info[0]}',
+                                    prenom = '{info[1]}',
+                                    dateNaissance = '{info[2]}',
+                                    genre = '{info[3]}'
+                                WHERE NISS = {self.NISS}"""
+                            )
+        ## Update PatientGSM ##
+        if (info[4] != "Pas de GSM"):
+            self.cursor.execute(f"""UPDATE PatientGSM
+                                    SET numeroGSM = '{info[4]}'
+                                    WHERE NISS = {self.NISS}"""
+                                )
+        ## Update PatientEmail ##
+        if (info[5] != "Pas d'email"):
+            self.cursor.execute(f"""UPDATE PatientEmail
+                                    SET email = '{info[5]}'
+                                    WHERE NISS = {self.NISS}"""
+                                )
+        self.connection.commit()
+        self.changeInfoWindow.destroy()
+        self.refrechClientInfo()
+        self.infoWindow.destroy()
+        self.clientWindow.deiconify()
+
+
     def consulterTraitement(self):
         """Opens a window to consult the treatments of the client"""
+        ### Get the info of the client ###
         self.cursor.execute(f"""SELECT *
                                 FROM DossierPatient
                                 WHERE NISS = {self.NISS}
                                 ORDER BY datePrescription DESC"""
                             )
         infoDossier = self.cursor.fetchall()
-        
+        ### Create the new window ###
         self.clientWindow.withdraw()
         self.traitementWindow = tk.Toplevel(self.clientWindow)
         self.traitementWindow.title("Traitements")
         self.traitementWindow.geometry("500x500")
         self.traitementWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the widgets ###
+        ## texts ##
+        # Title #
         label = tk.Label(self.traitementWindow, text="Traitements :")
         label.pack(pady=10)
-
+        # Info #
         text = tk.Text(self.traitementWindow, height=20, width=55)
         text.pack(pady=10)
         for traitement in infoDossier:
@@ -329,29 +395,32 @@ class MyGUI():
             text.insert(tk.END, f"  - Durée : {traitement[9]} \n")
             text.insert(tk.END, f"  - Date de vente : {traitement[8]} \n")
         text.configure(state="disabled")
-
+        ## Return button ##
         buttonReturn = tk.Button(self.traitementWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.traitementWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
 
 
     def consulterDiagnostic(self) :
         """Opens a window to consult the diagnostics of the client"""
+        ### Get the info of the client ###
         self.cursor.execute(f"""SELECT dateDiagnostic, pathologieNom, specialite
                                 FROM Diagnostic
                                 WHERE NISS = {self.NISS}
                                 ORDER BY pathologieNom DESC"""
                             )
         infoDiagnostic = self.cursor.fetchall()
-
+        ### Create the new window ###
         self.clientWindow.withdraw()
         self.diagnosticWindow = tk.Toplevel(self.clientWindow)
         self.diagnosticWindow.title("Diagnostics")
         self.diagnosticWindow.geometry("500x500")
         self.diagnosticWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-
+        ### Create the widgets ###
+        ## texts ##
+        # Title #
         label = tk.Label(self.diagnosticWindow, text="Diagnostics :")
         label.pack(pady=10)
-
+        # Info #
         text = tk.Text(self.diagnosticWindow, height=20, width=55)
         text.pack(pady=10)
         for diagnostic in infoDiagnostic:
@@ -359,7 +428,7 @@ class MyGUI():
             text.insert(tk.END, f"  - Date : {diagnostic[0]} \n")
             text.insert(tk.END, f"  - Specialite : {diagnostic[2]} \n")
         text.configure(state="disabled")
-
+        ## Return button ##
         buttonReturn = tk.Button(self.diagnosticWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.diagnosticWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
 

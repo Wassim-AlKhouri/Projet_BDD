@@ -1,4 +1,4 @@
-<specialites>
+<root>
 <specialite>
 	<name>Addictologie</name>
 	<medicament>systeme nerveux</medicament>
@@ -77,4 +77,4 @@
 	<medicament>muscle et squelette</medicament>
 </specialite>
 
-</specialites>
+</root>

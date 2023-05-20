@@ -1,4 +1,4 @@
-<pharmaciens>
+<root>
 
   <pharmacien>
     <inami> 64418437018</inami>
@@ -2159,4 +2159,4 @@
     <tel>+32363449075563</tel>
   </pharmacien>
 
-</pharmaciens>
+</root>
