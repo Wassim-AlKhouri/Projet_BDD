@@ -68,7 +68,7 @@ class MyGUI():
             6: {"description": "La liste des médecins ayant prescrit des médicaments ne relevant pas de leur spécialité"},
             7: {"description": "Pour chaque décennie entre 1950 et 2020,(1950-59,1960-69,...),le médicament le plus consommé par des patients nés durant cette décennie"},
             8: {"description": "Quelle est la pathologie la plus diagnostiquée"},
-            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament ", "entries": ["NISS"]},
+            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament "},
             10: {"description": "La liste de médicament n'étant plus prescrit depuis une date spécifique", "entries": ["Date de prescription (YYYY-MM-DD)"]}
         }
         data = query_data[number]
@@ -100,10 +100,18 @@ class MyGUI():
         ### Get the query and execute it ###
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
-        if len(args) == 0:
+        if len(args) > 0:
             named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
             sql = sql.format(**named_args)
-        cursor.execute(sql)
+        try:
+            cursor.execute(sql)
+        except mysql.connector.Error as err:
+            if err.errno == 1525:
+                messagebox.showerror("Error", "Invalid date value\nFormat: YYYY-MM-DD")
+                return
+            else:
+                print(err)
+                exit(1)
         results = cursor.fetchall()
         ### Create the new window ###
         result_window = tk.Toplevel(self.root)
