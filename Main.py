@@ -35,7 +35,7 @@ class MyGUI():
         ## Button ##
         self.button = tk.Button(self.root, text="Connect", width=20, command=self.connect)
         self.button.pack(pady=10)
-
+        ### Run the main loop ###
         self.root.mainloop()
 
 
@@ -346,17 +346,24 @@ class MyGUI():
                                 WHERE NISS = {self.NISS}"""
                             )
         ## Update PatientGSM ##
-        if (info[4] != "Pas de GSM"):
-            self.cursor.execute(f"""UPDATE PatientGSM
-                                    SET numeroGSM = '{info[4]}'
-                                    WHERE NISS = {self.NISS}"""
-                                )
+        if (info[4] != "Pas de GSM" and info[4] != ""):
+            GSM = info[4]
+        else :
+            GSM = "None"
+        self.cursor.execute(f"""UPDATE PatientGSM
+                                SET numeroGSM = '{GSM}'
+                                WHERE NISS = {self.NISS}"""
+                            )
         ## Update PatientEmail ##
-        if (info[5] != "Pas d'email"):
-            self.cursor.execute(f"""UPDATE PatientEmail
-                                    SET email = '{info[5]}'
-                                    WHERE NISS = {self.NISS}"""
-                                )
+        if (info[5] != "Pas d'email" and info[5] != ""):
+            email = info[5]
+        else :
+            email = "None"
+        self.cursor.execute(f"""UPDATE PatientEmail
+                                SET email = '{email}'
+                                WHERE NISS = {self.NISS}"""
+                            )
+        ### Commit the changes ###
         self.connection.commit()
         self.changeInfoWindow.destroy()
         self.refrechClientInfo()
