@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import mysql.connector
+from datetime import datetime
+
 
 class MyGUI():
 
@@ -337,6 +339,10 @@ class MyGUI():
         for entry in entries:
             info.append(entry.get())
         ### Change the info in the database ###
+        ## Test if the date is correct ##
+        if self.isDateSqlFormat(info[2]) == False:
+            messagebox.showerror("Error", "La date n'est pas au bon format\nFormat : YYYY-MM-DD")
+            return
         ## Update Patient ##
         self.cursor.execute(f"""UPDATE Patient
                                 SET nom = '{info[0]}',
@@ -444,6 +450,14 @@ class MyGUI():
         """Returns to the parent window"""
         subwindow.destroy()
         root.deiconify()
+    
+
+    def isDateSqlFormat(self,date_string):
+        try:
+            datetime.strptime(date_string, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
 
 
 if __name__ == '__main__':
