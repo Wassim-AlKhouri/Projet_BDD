@@ -28,8 +28,8 @@ cursor.execute("USE groupAX_DB")
 cursor.execute("""CREATE TABLE Specialite (specialiteNom VARCHAR(50) PRIMARY KEY)""")
 
 cursor.execute("""CREATE TABLE SpecialiteSystemeAnatomique (
-                systemeAnatomiqueNom VARCHAR(50),
-                specialiteNom VARCHAR(50),
+                systemeAnatomiqueNom VARCHAR(50) NOT NULL,
+                specialiteNom VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom),
                 PRIMARY KEY (systemeAnatomiqueNom, specialiteNom)
                 )""")
 
