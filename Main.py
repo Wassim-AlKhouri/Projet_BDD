@@ -61,7 +61,7 @@ class MyGUI():
         """Launches the query"""
         query_data = {
             1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": ["DCI"]},
-            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": ["specialite"]},
+            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes"},
             3: {"description": "La spécialité de médecins pour laquelle les médecins prescrivent le plus de médicaments"},
             4: {"description": "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé", "entries": ["NomCommercial","Date De Prescription (YYYY-MM-DD)"]},
             5: {"description": "Tous les patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu'un patient suive bien un traitement chronique", "entries": ["DCI"]},
