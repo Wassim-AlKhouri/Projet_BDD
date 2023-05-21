@@ -8,15 +8,21 @@ cnx = mysql.connector.connect(
 
 # Create a new database if it doesn't exist
 cursor = cnx.cursor()
-cursor.execute("DROP DATABASE IF EXISTS groupAX_DB") # à enlever
 try:
     cursor.execute("CREATE DATABASE groupAX_DB")
 except mysql.connector.errors.DatabaseError as err:
     if err.errno == mysql.connector.errorcode.ER_DB_CREATE_EXISTS:
         print("Database already created or a database with the same name exists")
+        print("Would you like to drop the database and create a new one? (y/n)")
+        if input() == 'y':
+            cursor.execute("DROP DATABASE groupAX_DB")
+            cursor.execute("CREATE DATABASE groupAX_DB")
+        else:
+            print("Aborting")
+            exit(1)
     else:
-        print(err)
-    exit(1)
+        print(err.msg)
+        exit(1)
 cursor.execute("USE groupAX_DB")
 
 cursor.execute("""CREATE TABLE Specialite (specialiteNom VARCHAR(50) PRIMARY KEY)""")
@@ -104,8 +110,8 @@ cursor.execute("""CREATE TABLE Diagnostic (
                 )""")
 
 
-
 # Commit the changes and close the cursor and connection objects
 cnx.commit()
 cursor.close()
 cnx.close()
+print("Database created successfully")
