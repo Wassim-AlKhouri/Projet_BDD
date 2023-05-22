@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import mysql.connector
+from datetime import datetime
+
 
 class MyGUI():
 
@@ -35,7 +37,7 @@ class MyGUI():
         ## Button ##
         self.button = tk.Button(self.root, text="Connect", width=20, command=self.connect)
         self.button.pack(pady=10)
-
+        ### Run the main loop ###
         self.root.mainloop()
 
 
@@ -59,14 +61,14 @@ class MyGUI():
         """Launches the query"""
         query_data = {
             1: {"description": "La liste des noms commerciaux de médicaments correspondant à un nom en DCI, classés par ordre alphabétique et taille de conditionnement.", "entries": ["DCI"]},
-            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes", "entries": ["specialite"]},
+            2: {"description": "La liste des pathologies qui peuvent être prise en charge par un seul type de spécialistes"},
             3: {"description": "La spécialité de médecins pour laquelle les médecins prescrivent le plus de médicaments"},
             4: {"description": "Tous les utilisateurs ayant consommé un médicament spécifique (sous son nom commercial) après une date donnée, par exemple en cas de rappel de produit pour lot contaminé", "entries": ["NomCommercial","Date De Prescription (YYYY-MM-DD)"]},
             5: {"description": "Tous les patients ayant été traités par un médicament (sous sa DCI) à une date antérieure mais qui ne le sont plus,pour vérifier qu'un patient suive bien un traitement chronique", "entries": ["DCI"]},
             6: {"description": "La liste des médecins ayant prescrit des médicaments ne relevant pas de leur spécialité"},
             7: {"description": "Pour chaque décennie entre 1950 et 2020,(1950-59,1960-69,...),le médicament le plus consommé par des patients nés durant cette décennie"},
             8: {"description": "Quelle est la pathologie la plus diagnostiquée"},
-            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament ", "entries": ["NISS"]},
+            9: {"description": "Pour chaque patient,le nombre de médecin lui ayant prescrit un médicament "},
             10: {"description": "La liste de médicament n'étant plus prescrit depuis une date spécifique", "entries": ["Date de prescription (YYYY-MM-DD)"]}
         }
         data = query_data[number]
@@ -98,10 +100,18 @@ class MyGUI():
         ### Get the query and execute it ###
         with open(f'query_{number}.sql', 'r') as f:
             sql = f.read()
-        if len(args) == 0:
+        if len(args) > 0:
             named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
             sql = sql.format(**named_args)
-        cursor.execute(sql)
+        try:
+            cursor.execute(sql)
+        except mysql.connector.Error as err:
+            if err.errno == 1525:
+                messagebox.showerror("Error", "Invalid date value\nFormat: YYYY-MM-DD")
+                return
+            else:
+                print(err)
+                exit(1)
         results = cursor.fetchall()
         ### Create the new window ###
         result_window = tk.Toplevel(self.root)
@@ -337,6 +347,10 @@ class MyGUI():
         for entry in entries:
             info.append(entry.get())
         ### Change the info in the database ###
+        ## Test if the date is correct ##
+        if self.isDateSqlFormat(info[2]) == False:
+            messagebox.showerror("Error", "La date n'est pas au bon format\nFormat : YYYY-MM-DD")
+            return
         ## Update Patient ##
         self.cursor.execute(f"""UPDATE Patient
                                 SET nom = '{info[0]}',
@@ -346,17 +360,24 @@ class MyGUI():
                                 WHERE NISS = {self.NISS}"""
                             )
         ## Update PatientGSM ##
-        if (info[4] != "Pas de GSM"):
-            self.cursor.execute(f"""UPDATE PatientGSM
-                                    SET numeroGSM = '{info[4]}'
-                                    WHERE NISS = {self.NISS}"""
-                                )
+        if (info[4] != "Pas de GSM" and info[4] != ""):
+            GSM = info[4]
+        else :
+            GSM = "None"
+        self.cursor.execute(f"""UPDATE PatientGSM
+                                SET numeroGSM = '{GSM}'
+                                WHERE NISS = {self.NISS}"""
+                            )
         ## Update PatientEmail ##
-        if (info[5] != "Pas d'email"):
-            self.cursor.execute(f"""UPDATE PatientEmail
-                                    SET email = '{info[5]}'
-                                    WHERE NISS = {self.NISS}"""
-                                )
+        if (info[5] != "Pas d'email" and info[5] != ""):
+            email = info[5]
+        else :
+            email = "None"
+        self.cursor.execute(f"""UPDATE PatientEmail
+                                SET email = '{email}'
+                                WHERE NISS = {self.NISS}"""
+                            )
+        ### Commit the changes ###
         self.connection.commit()
         self.changeInfoWindow.destroy()
         self.refrechClientInfo()
@@ -437,6 +458,14 @@ class MyGUI():
         """Returns to the parent window"""
         subwindow.destroy()
         root.deiconify()
+    
+
+    def isDateSqlFormat(self,date_string):
+        try:
+            datetime.strptime(date_string, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
 
 
 if __name__ == '__main__':

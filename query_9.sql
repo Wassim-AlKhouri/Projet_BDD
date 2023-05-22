@@ -1,3 +1,5 @@
-SELECT COUNT(DISTINCT d.medecinINAMI)
+SELECT p.nom,p.prenom,COUNT(DISTINCT d.medecinINAMI)
 FROM DossierPatient d 
-WHERE d.NISS = '{placeholder1}'
+JOIN Patient p ON p.NISS = d.NISS
+GROUP BY p.NISS
+ORDER BY COUNT(DISTINCT d.medecinINAMI) DESC, p.nom ASC, p.prenom ASC
