@@ -31,7 +31,7 @@ class MyGUI():
         self.text.pack()
         ## Entry ##
         self.entryNISS = tk.Entry(self.root, width=30, justify="center")
-        self.entryNISS.insert(0, "54723498984")
+        self.entryNISS.insert(0, "393834744538")
         self.entryNISS.bind("<FocusIn>", lambda event, arg="NISS": self.clear_default_entry(event, arg))
         self.entryNISS.pack(pady=10)
         ## Button ##
@@ -400,12 +400,33 @@ class MyGUI():
     def consulterTraitement(self):
         """Opens a window to consult the treatments of the client"""
         ### Get the info of the client ###
-        self.cursor.execute(f"""SELECT *
+        ## Active Treatements ##
+        self.cursor.execute(f"""SELECT *,
+                                DATE_ADD(datePrescription, INTERVAL dureeTraitement DAY) AS dateFinTraitement
                                 FROM DossierPatient
-                                WHERE NISS = {self.NISS}
-                                ORDER BY datePrescription DESC"""
-                            )
-        infoDossier = self.cursor.fetchall()
+                                WHERE NISS = {self.NISS} 
+                                    AND DATE_ADD(datePrescription, INTERVAL dureeTraitement DAY) >= CURRENT_DATE()
+                                ORDER BY datePrescription DESC
+                                """)
+        ActiveTreatements = self.cursor.fetchall()
+        ## Past Treatements ##
+        self.cursor.execute(f"""SELECT *,
+                                DATE_ADD(datePrescription, INTERVAL dureeTraitement DAY) AS dateFinTraitement
+                            FROM DossierPatient
+                            WHERE NISS = {self.NISS} 
+                                AND DATE_ADD(datePrescription, INTERVAL dureeTraitement DAY) < CURRENT_DATE()
+                            ORDER BY datePrescription DESC
+                            """)
+        PastTreatements = self.cursor.fetchall()
+        ## Conflicting Treatements ##
+        self.cursor.execute(f"""SELECT DCI
+                                FROM DossierPatient
+                                WHERE NISS = {self.NISS} 
+                                    AND DATE_ADD(datePrescription, INTERVAL dureeTraitement DAY) >= CURRENT_DATE()
+                                GROUP BY DCI
+                                HAVING COUNT(*) > 1
+                                """)
+        ConflictingTreatements = self.cursor.fetchall()
         ### Create the new window ###
         self.clientWindow.withdraw()
         self.traitementWindow = tk.Toplevel(self.clientWindow)
@@ -413,24 +434,46 @@ class MyGUI():
         self.traitementWindow.geometry("500x500")
         self.traitementWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
         ### Create the widgets ###
-        ## texts ##
+        ## Active ##
         # Title #
-        label = tk.Label(self.traitementWindow, text="Traitements :")
+        label = tk.Label(self.traitementWindow, text="Traitements actives :")
         label.pack(pady=10)
         # Info #
-        text = tk.Text(self.traitementWindow, height=20, width=55)
+        text = tk.Text(self.traitementWindow, height=10, width=55)
         text.pack(pady=10)
-        for traitement in infoDossier:
+        for traitement in ActiveTreatements:
             text.insert(tk.END, f"{traitement[7]}, {traitement[5]} : \n")
             text.insert(tk.END, f"  - Medicament DCI : {traitement[6]} \n")
             text.insert(tk.END, f"  - Medecin : {traitement[1]} \n")
             text.insert(tk.END, f"  - Pharmacien : {traitement[3]} \n")
             text.insert(tk.END, f"  - Durée : {traitement[9]} \n")
             text.insert(tk.END, f"  - Date de vente : {traitement[8]} \n")
+            text.insert(tk.END, f"  - Date de fin : {traitement[10]} \n")
+        text.configure(state="disabled")
+        ## Past ##
+        # Title #
+        label = tk.Label(self.traitementWindow, text="Anciens traitements :")
+        label.pack(pady=10)
+        # Info #
+        text = tk.Text(self.traitementWindow, height=10, width=55)
+        text.pack(pady=10)
+        for traitement in PastTreatements:
+            text.insert(tk.END, f"{traitement[7]}, {traitement[5]} : \n")
+            text.insert(tk.END, f"  - Medicament DCI : {traitement[6]} \n")
+            text.insert(tk.END, f"  - Medecin : {traitement[1]} \n")
+            text.insert(tk.END, f"  - Pharmacien : {traitement[3]} \n")
+            text.insert(tk.END, f"  - Durée : {traitement[9]} \n")
+            text.insert(tk.END, f"  - Date de vente : {traitement[8]} \n")
+            text.insert(tk.END, f"  - Date de fin : {traitement[10]} \n")
         text.configure(state="disabled")
         ## Return button ##
         buttonReturn = tk.Button(self.traitementWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.traitementWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
+        ## Conflicting ##
+        if (len(ConflictingTreatements) > 0):
+            messagebox.showwarning("Attention", "Le client t prend plusieurs médicaments du même type simultanément.\n Voici les médicaments concernés : " + str(ConflictingTreatements))
+        else :
+            messagebox.showinfo("Information", "Le client ne prend pas de médicaments du même type.")
 
 
     def consulterDiagnostic(self) :
