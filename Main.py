@@ -307,6 +307,7 @@ class MyGUI():
         text.insert(tk.END,f"Genre : {Genre}\n")
         text.insert(tk.END,f"Telephone : {GSM}\n")
         text.insert(tk.END,f"Email : {Email}\n")
+        text.config(state="disabled")
         ## Buttons ##
         # Change button #
         buttonChange = tk.Button(self.infoWindow, text="Changer", width=20, command = lambda: self.changeInfo([Nom,Prenom,DateNaissance,Genre,GSM,Email]))
@@ -347,10 +348,21 @@ class MyGUI():
         for entry in entries:
             info.append(entry.get())
         ### Change the info in the database ###
-        ## Test if the date is correct ##
+        ## Tests ##
+        # Date #
         if self.isDateSqlFormat(info[2]) == False:
             messagebox.showerror("Error", "La date n'est pas au bon format\nFormat : YYYY-MM-DD")
             return
+        # GSM #
+        if info[4] != "Pas de GSM" and info[4] != "":
+            if self.isGSMFormat(info[4]) == False:
+                messagebox.showerror("Error", "Le numero de telephone n'est pas au bon format\nFormat : 04XX XX XX XX")
+                return
+        # Email #
+        if info[5] != "Pas d'email" and info[5] != "":
+            if self.isEmailFormat(info[5]) == False:
+                messagebox.showerror("Error", "L'email n'est pas au bon format\nFormat : XX@XX.XX\n and length < 50")
+                return
         ## Update Patient ##
         self.cursor.execute(f"""UPDATE Patient
                                 SET nom = '{info[0]}',
@@ -466,6 +478,30 @@ class MyGUI():
             return True
         except ValueError:
             return False
+        
+
+    def isGSMFormat(self,GSM):
+        if len(GSM) != 10:
+            return False
+        if GSM[0:2] != "04":
+            return False
+        for i in range(2,10):
+            if GSM[i] < '0' or GSM[i] > '9':
+                return False
+        return True
+    
+
+    def isEmailFormat(self,email):
+        if len(email) > 50 or len(email) < 5:
+            print("1")
+            return False
+        elif email.find('@') == -1 or email.find('.') == -1:
+            print("2")
+            return False
+        elif email.find('@') > email.rfind('.'):
+            print("3")
+            return False
+        return True
 
 
 if __name__ == '__main__':
