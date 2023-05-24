@@ -214,7 +214,7 @@ class MyGUI():
                            )
         infoPharmacien = self.cursor.fetchone()
         return infoPatient,infoMedecin,infoPharmacien
-
+    
 
     def changeMedecinPharmacien(self,type):
         """Opens a window to change the medecin or the pharmacien"""
