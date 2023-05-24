@@ -98,7 +98,7 @@ class MyGUI():
     def executeQuary(self,number,cursor,args):
         """Executes the query number with the given arguments."""
         ### Get the query and execute it ###
-        with open(f'query_{number}.sql', 'r') as f:
+        with open(f'queries/query_{number}.sql', 'r') as f:
             sql = f.read()
         if len(args) > 0:
             named_args = {f'placeholder{i+1}': arg for i, arg in enumerate(args)}
@@ -125,7 +125,7 @@ class MyGUI():
 
 
     def connect(self):
-        """Connects to the database"""
+        """Connects to the database and creates the main window"""
         self.NISS = self.entryNISS.get()
         ### Get the patient info from the database ###
         infoPatient, infoMedecin, infoPharmacien = self.getPatientInfo()
@@ -135,7 +135,6 @@ class MyGUI():
             print("Medecin",infoMedecin)
             print("Pharmacien",infoPharmacien)
             return
-
         self.root.withdraw()
         ### Create the new window ###
         self.clientWindow = tk.Toplevel(self.root)
@@ -151,6 +150,9 @@ class MyGUI():
         # Change Medecin #
         buttonChangerMedecin = tk.Button(self.clientWindow, text="Changer de medecin", width=30, command = lambda:self.changeMedecinPharmacien("medecin"))
         buttonChangerMedecin.pack(pady=10)
+        # Chercher Expert #
+        buttonChercherExpert = tk.Button(self.clientWindow, text="Chercher un expert", width=30, command = self.chercherExpert)
+        buttonChercherExpert.pack(pady=10)
         # Change Pharmacien #
         buttonChangerPharmacien = tk.Button(self.clientWindow, text="Changer de pharmacien", width=30, command = lambda:self.changeMedecinPharmacien("pharmacien"))
         buttonChangerPharmacien.pack(pady=10)
@@ -266,6 +268,57 @@ class MyGUI():
         self.changeWindow.destroy()
         self.refrechClientInfo()
         self.clientWindow.deiconify()
+
+    
+    def chercherExpert(self) : 
+        """Opens a window to search for an expert"""
+        ### Create the new window ###
+        self.clientWindow.withdraw()
+        self.changeWindow = tk.Toplevel(self.clientWindow)
+        self.changeWindow.title("Chercher un expert")
+        self.changeWindow.geometry("500x500")
+        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
+        ### Create the widgets ###
+        ## text ##
+        label = tk.Label(self.changeWindow, text="Choisissez une pathologie :")
+        label.pack(pady=10)
+        ## Entry ##
+        entry = tk.Entry(self.changeWindow, width=20)
+        entry.pack(pady=10)
+        ## listbox ##
+        listbox = tk.Listbox(self.changeWindow,justify="center")
+        listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
+        ## buttons ##
+        # Search button #
+        button = tk.Button(self.changeWindow, text="Chercher", width=20, command=lambda: self.searchExpertQuary(entry.get(),listbox))
+        button.pack(pady=10)
+        # Change Doctor button #
+        button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changeMedecinPharmacienQuary(listbox.get(tk.ACTIVE),"medecin"))
+        button.pack(pady=10)
+        # Return button #
+        buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.searchWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
+        
+
+    def searchExpertQuary(self,pathologie,listbox):
+        """Search for an expert in the database"""
+        ### Get the list of the experts ###
+        self.cursor.execute(f"""SELECT m.INAMI, m.employeNOM, COUNT(*)
+                                FROM Medecin m
+                                JOIN DossierPatient dp ON dp.medecinINAMI = m.INAMI
+                                JOIN Diagnostic d ON d.NISS = dp.NISS
+                                WHERE d.pathologieNom = '{pathologie}'
+                                GROUP BY dp.medecinINAMI
+                                ORDER BY COUNT(*) DESC, m.employeNOM ASC
+                                """)
+        infoMedecin = self.cursor.fetchall()
+        ### Inject the info in the listbox ###
+        if (infoMedecin == []):
+            messagebox.showerror("Erreur", "Aucun expert trouvé")
+        else:
+            listbox.delete(0, tk.END)
+            for medecin in infoMedecin:
+                listbox.insert(tk.END, medecin)
     
 
     def consulterInfo(self):
@@ -318,6 +371,7 @@ class MyGUI():
         
 
     def changeInfo(self,info):
+        """Opens a window to change the informations of the client"""
         ### Create the new window ###
         self.infoWindow.withdraw()
         self.changeInfoWindow = tk.Toplevel(self.infoWindow)
@@ -516,6 +570,7 @@ class MyGUI():
     
 
     def isDateSqlFormat(self,date_string):
+        """Checks if the date is in the correct format"""
         try:
             datetime.strptime(date_string, '%Y-%m-%d')
             return True
@@ -524,6 +579,7 @@ class MyGUI():
         
 
     def isGSMFormat(self,GSM):
+        """Checks if the GSM is in the correct format"""
         if len(GSM) != 10:
             return False
         if GSM[0:2] != "04":
@@ -535,6 +591,7 @@ class MyGUI():
     
 
     def isEmailFormat(self,email):
+        """Checks if the email is in the correct format"""
         if len(email) > 50 or len(email) < 5:
             print("1")
             return False

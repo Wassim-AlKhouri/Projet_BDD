@@ -229,34 +229,16 @@ if __name__ == "__main__":
     cursor = cnx.cursor()
     duplicate_entry = 0
     inserted_entry = 0
-    inserted_entry,duplicate_entry = insert_diagnostiques("D:\documents\GitHub\Projet_BDD\Données\diagnostiques.xml",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_pharmacien("D:\documents\GitHub\Projet_BDD\Données\pharmaciens.xml",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_medecin("D:\documents\GitHub\Projet_BDD\Données\medecins.xml",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_patient("D:\documents\GitHub\Projet_BDD\Données\patients_corrige.xml",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_specialite("D:\documents\GitHub\Projet_BDD\Données\specialites.xml",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_csv("D:\documents\GitHub\Projet_BDD\Données\dossiers_patients.csv",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_csv("D:\documents\GitHub\Projet_BDD\Données\medicaments.csv",cursor,inserted_entry,duplicate_entry)
-    inserted_entry,duplicate_entry = insert_csv("D:\documents\GitHub\Projet_BDD\Données\pathologies.csv",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_diagnostiques("Données\diagnostiques.xml",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_pharmacien("Données\pharmaciens.xml",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_medecin("Données\medecins.xml",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_patient("Données\patients_corrige.xml",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_specialite("Données\specialites.xml",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_csv("Données\dossiers_patients.csv",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_csv("Données\medicaments.csv",cursor,inserted_entry,duplicate_entry)
+    inserted_entry,duplicate_entry = insert_csv("Données\pathologies.csv",cursor,inserted_entry,duplicate_entry)
     print("inserted entry : " + str(inserted_entry))
     print("duplicate entry : " + str(duplicate_entry))
-    ### TESTING ###
-    #cursor.execute("""SELECT s.specialiteNom
-    #                FROM Specialite s
-    #                JOIN SpecialiteSystemeAnatomique a ON s.specialiteNom = a.SpecialiteNom
-    #                JOIN Medicament m ON m.systemeAnatomiqueNom=a.systemeAnatomiqueNom
-    #                JOIN DossierPatient d ON d.medicamentNomCommercial=m.medicamentNomCommercial
-    #                GROUP BY s.specialiteNom
-    #                ORDER BY COUNT(*) DESC
-    #                LIMIT 1;""")
-    #cursor.execute(f"""SELECT *
-    #                    FROM PatientEmail 
-    #                    """
-    #            )
-    #rows = cursor.fetchall()
-    #for row in rows:
-    #    print(row)
-    #print("Number of rows: %s" % cursor.rowcount)
-
     cnx.commit()
     cursor.close()
     cnx.close()
