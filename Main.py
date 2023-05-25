@@ -246,7 +246,10 @@ class MyGUI():
         ## listbox ##
         listbox = tk.Listbox(self.changeWindow,justify="center")
         for employe in infoEmploye:
-            listbox.insert(tk.END, (employe[0],employe[1],employe[2].replace(" ","_")))
+            if (type == "medecin"):
+                listbox.insert(tk.END, (employe[0],employe[1],employe[2].replace(" ","_")))
+            else:
+                listbox.insert(tk.END, (employe[0],employe[1]))
         listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
         ## buttons ##
         # Change button #
