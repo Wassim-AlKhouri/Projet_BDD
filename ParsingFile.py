@@ -83,6 +83,7 @@ def insert_medecin(path,cursor,inserted_entry,duplicate_entry):
             employeNom = medecin.find('nom').text
             employeNum = medecin.find('telephone').text
             specialite = medecin.find('specialite').text
+            print(specialite)
             try:
                 cursor.execute("""INSERT INTO medecin 
                                 (INAMI,employeNom,employeNum,specialite)

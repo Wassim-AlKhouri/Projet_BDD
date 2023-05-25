@@ -139,7 +139,7 @@ class MyGUI():
         ### Create the new window ###
         self.clientWindow = tk.Toplevel(self.root)
         self.clientWindow.title(f"Client {infoPatient[0]}")
-        self.clientWindow.geometry("500x500")
+        self.clientWindow.geometry("500x600")
         self.clientWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
         ### Create the widgets ###
         ## Patient info ##
@@ -166,7 +166,7 @@ class MyGUI():
         buttonConsulterDiagostic = tk.Button(self.clientWindow, text="Consulter les diagnostics", width=30, command = self.consulterDiagnostic)
         buttonConsulterDiagostic.pack(pady=10)
         # Faceted search#
-        buttonFactedSearch = tk.Button(self.clientWindow, text="Recherche à facettes", width=30, command = self.facetedSearch)
+        buttonFactedSearch = tk.Button(self.clientWindow, text="Recherche à facettes", width=30, command = lambda : self.facetedSearch(0,self.clientWindow))
         buttonFactedSearch.pack(pady=10)
         # Return #
         buttonReturn = tk.Button(self.clientWindow, text="Retour", width=30, command = lambda: self.returnToParentWindow(self.clientWindow,self.root))
@@ -245,8 +245,8 @@ class MyGUI():
         label.pack(pady=10)
         ## listbox ##
         listbox = tk.Listbox(self.changeWindow,justify="center")
-        for medecin in infoEmploye:
-            listbox.insert(tk.END, medecin)
+        for employe in infoEmploye:
+            listbox.insert(tk.END, (employe[0],employe[1],employe[2].replace(" ","_")))
         listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
         ## buttons ##
         # Change button #
@@ -272,107 +272,105 @@ class MyGUI():
         self.refrechClientInfo()
         self.clientWindow.deiconify()
 
-    def facetedSearch(self):
-        """"Opens a window that allows a client to access public information in the database and apply different filters"""
-    ### Create the new window ###
-        self.clientWindow.withdraw()
-        self.changeWindow = tk.Toplevel(self.clientWindow)
-        self.changeWindow.title("Recherche à facettes")
-        self.changeWindow.geometry("500x500")
-        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
+    def facetedSearch(self, type, lastwindow):
+        """Opens a window that allows a client to access public information in the database and apply different filters"""
+        ### Create the new window ###
+        lastwindow.withdraw()
+        self.facetWindow = tk.Toplevel(self.clientWindow)
+        self.facetWindow.title("Recherche à facettes")
+        self.facetWindow.geometry("500x500")
+        self.facetWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
         ### Create the widgets ###
         ## variable ##
-        variable1 = IntVar()
-        search1 = ('Médecin', 'Médicament', 'Pathologie')
+        var = IntVar()
+        search  = {
+            0 : ('Médecin', 'Médicament', 'Pathologie'),
+            1 : ('Spécialité', 'Ordre alphabétique'),
+            2 : ('DCI','Système anatomique'),
+            3 : ('Spécialité traitant la pathologie', 'Ordre alphabétique')
+        }
         ## text ##
-        label = tk.Label(self.changeWindow, text="Sélectionnez des fitres de recherche : ")
+        label = tk.Label(self.facetWindow, text="Sélectionnez des fitres de recherche : ")
         label.pack(pady=10)
         ## RadioButton ##
-        c1 = tk.Radiobutton(self.changeWindow,text=search1[0],variable=variable1,value=0)
-        c1.pack(pady=10)
-        c2 = tk.Radiobutton(self.changeWindow, text=search1[1],variable=variable1,value=1)
-        c2.pack(pady=10)
-        c3 = tk.Radiobutton(self.changeWindow,text=search1[2],variable=variable1,value=2)
-        c3.pack(pady=10)
+        for i in range(len(search[type])):
+            option = tk.Radiobutton(self.facetWindow,text=search[type][i],variable=var,value=(i+1))
+            option.pack(pady=10)
         ## Button ##
         # Select search filters #
-        button = tk.Button(self.changeWindow,text='Sélectionner', width=20, command=lambda: self.facetedSearch1(variable1))
-        button.pack(pady=10)
+        if type == 0:
+            button = tk.Button(self.facetWindow,text='Sélectionner', width=20, command=lambda: self.facetedSearch(var.get(),self.facetWindow))
+            button.pack(pady=10)
+        else : 
+            button = tk.Button(self.facetWindow,text='Sélectionner', width=20, command=lambda: self.facetedSearch2(type-1,var.get()-1,self.facetWindow))
+            button.pack(pady=10)
+        # Return button #
+        buttonReturn = tk.Button(self.facetWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.facetWindow,self.clientWindow))
+        buttonReturn.pack(pady=10)
 
-    def facetedSearch1(self,variable1):
+
+    def facetedSearch2(self, variable1, variable2, lastwindow):
+        ### Get Info ###
+        info = []
+        if variable1 == 0:
+            if variable2 == 0:
+                self.cursor.execute("""SELECT DISTINCT specialite
+                                    FROM Medecin""")
+                info = self.cursor.fetchall()
+            else:
+                info = {'ASC', 'DESC'}
+        elif variable1 == 1:
+            if variable2 == 0:
+                self.cursor.execute("""SELECT DISTINCT DCI
+                                    FROM Medicament""")
+                info = self.cursor.fetchall()
+            else:
+                self.cursor.execute("""SELECT DISTINCT systemeAnatomiqueNom
+                                    FROM Medicament""")
+                info = self.cursor.fetchall()
+        else:
+            if variable2 == 0:
+                self.cursor.execute("""SELECT DISTINCT specialiteNom
+                                    FROM Pathologie
+                                    """)
+                info = self.cursor.fetchall()
+            else:
+                info = {'ASC', 'DESC'}
+
         ### Create the new window ###
-        self.clientWindow.withdraw()
-        self.changeWindow = tk.Toplevel(self.clientWindow)
-        self.changeWindow.title("Recherche à facettes")
-        self.changeWindow.geometry("500x500")
-        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
+        lastwindow.withdraw()
+        self.facetWindow2 = tk.Toplevel(self.clientWindow)
+        self.facetWindow2.title("Recherche à facettes")
+        self.facetWindow2.geometry("500x500")
+        self.facetWindow2.protocol("WM_DELETE_WINDOW", self.on_closing)
         ### Create the widgets ###
-        ## variables ##
-        variable2 = IntVar() 
-        search2 = ('Spécialité', 'Ordre alphabétique')
-        search3 = ('DCI','Système anatomique')
-        search4 = ('Spécialité traitant la pathologie', 'Ordre alphabétique')
-        ## text ##
-        label = tk.Label(self.changeWindow, text="Sélectionnez des fitres de recherche : ")
-        label.pack(pady=10)
-        ## RadioButton ##
-        if variable1==0:
-            c1 = tk.Radiobutton(self.changeWindow,text=search2[0],variable=variable2,value=0)
-            c1.pack(pady=10)
-            c2 = tk.Radiobutton(self.changeWindow, text=search2[1],variable=variable2,value=1)
-            c2.pack(pady=10)
-        if variable1 == 1:
-            c1 = tk.Radiobutton(self.changeWindow,text=search3[0],variable=variable2,value=0)
-            c1.pack(pady=10)
-            c2 = tk.Radiobutton(self.changeWindow, text=search3[1],variable=variable2,value=1)
-            c2.pack(pady=10)
-        if variable1 == 2:
-            c1 = tk.Radiobutton(self.changeWindow,text=search4[0],variable=variable2,value=0)
-            c1.pack(pady=10)
-            c2 = tk.Radiobutton(self.changeWindow, text=search4[1],variable=variable2,value=1)
-            c2.pack(pady=10)
-        ## Button ##
-        # Select search filters #
-        button = tk.Button(self.changeWindow,text='Sélectionner', width=20, command=lambda: self.facetedSearch2(variable1,variable2))
-        button.pack(pady=10)
-
-    def facetedSearch2(self,variable1, variable2):
-        ### Create the new window ###
-        self.clientWindow.withdraw()
-        self.changeWindow = tk.Toplevel(self.clientWindow)
-        self.changeWindow.title("Recherche à facettes")
-        self.changeWindow.geometry("500x500")
-        self.changeWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
-        ### Create the widgets ###
-
-        ## variables ##
-        options = [[["Addictologie","Allergologie","Anesthésie-réanimation","Dermatologie et vénérologie","Endocrinologie-diabétologie-nutrition","Gynécologie médicale","Hématologie","Hépato-gastro-entérologie","Médecine cardiovasculaire",
-                     "Maladies infectieuses et tropicales","Néphrologie","Neurologie","Oncologie","Pneumologie","Psychiatrie","Rhumatologie"],["ASC","DESC"]],
-                    [[],["systeme nerveux","systeme respiratoire","organes sensoriels","medicaments dermatologiques","antiparasitaires","hormones systemiques","systeme genito urinaire et hormones sexuelles","sang et organes hematopoietiques",
-                          "voies digestives et metabolisme","systeme cardiovasculaire","antiinfectieux generaux a usage systemique","muscle et squelette","antineoplasiques et immunomodulateurs","divers"]],
-                          [["Addictologie","Allergologie","Anesthésie-réanimation","Dermatologie et vénérologie","Endocrinologie-diabétologie-nutrition","Gynécologie médicale","Hématologie","Hépato-gastro-entérologie","Médecine cardiovasculaire",
-                            "Maladies infectieuses et tropicales","Néphrologie","Neurologie","Oncologie","Pneumologie","Psychiatrie","Rhumatologie"],["ASC","DESC"]]]
         ## Listbox ##
-        listbox = tk.Listbox(self.changeInfoWindow, justify="center", selectmode="SINGLE")
+        listbox = tk.Listbox(self.facetWindow2, justify="center")
+        for i in info:
+            listbox.insert(tk.END, i)
         listbox.pack(expand=True, fill='both', padx=10, pady=10, anchor='center')
-        listbox.insert(options[variable1,variable2])
-        selected = tk.Listbox.curselection
-        button = tk.Button(self.changeInfoWindow,text='Sélectionner', width=20, command = lambda: self.facetedSearchQueries(variable1,variable2,options[variable1,variable2,selected],listbox))
+        button = tk.Button(self.facetWindow2,text='Sélectionner', width=20, command = lambda: self.facetedSearchQueries(variable1,variable2,listbox.get(tk.ACTIVE),listbox,button))
         button.pack(pady=10)
-        ## cursor ##
+        ## Button ##
+        # Return button #
+        buttonReturn = tk.Button(self.facetWindow2, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.facetWindow2,self.facetWindow))
+        buttonReturn.pack(pady=10)
         
-    def facetedSearchQueries(self,variable1,variable2,entry,listbox):
-        query = [[f"""SELECT m.employeNom, m.INAMI FROM Medecin m WHERE m.Specialite = '{entry}'""",f"""SELECT m.Nom, m.INAMI FROM Medecin ORDER BY m.Nom {entry}'"""],
-                 [f"""SELECT m.medicamentNomCommercial FROM Medicament m WHERE m.DCI = '{entry}'""",f"""SELECT m.medicamentNomCommercial FROM Medicament m WHERE m.systemeAnatomiqueNom = '{entry}'"""],
-                 [f"""SELECT p.pathologieNom FROM Pathologie p WHERE p.specialiteNom = '{entry}'""",f"""SELECT p.pathologieNom FROM Pathologie p ORDER BY p.pathologieNom {entry}"""]]
-        self.cursor.execute(query[variable1,variable2])
+    def facetedSearchQueries(self,variable1,variable2,entry,listbox,button):
+        ## Button ##
+        button.destroy()
+        query = [[f"""SELECT m.employeNom, m.INAMI FROM Medecin m WHERE m.Specialite = '{entry[0]}'""",f"""SELECT m.Nom, m.INAMI FROM Medecin ORDER BY m.Nom {entry}'"""],
+                 [f"""SELECT DISTINCT m.medicamentNomCommercial FROM Medicament m WHERE m.DCI = '{entry[0]}'""",f"""SELECT DISTINCT m.medicamentNomCommercial FROM Medicament m WHERE m.systemeAnatomiqueNom = '{entry[0]}'"""],
+                 [f"""SELECT p.pathologieNom FROM Pathologie p WHERE p.specialiteNom = '{entry[0]}'""",f"""SELECT p.pathologieNom FROM Pathologie p ORDER BY p.pathologieNom {entry}"""]]
+        self.cursor.execute(query[variable1][variable2])
         searchResult = self.cursor.fetchall()
         if(searchResult ==[]):
             messagebox.showerror("Erreur","Aucun résultat trouvé")
         else:
             listbox.delete(0,tk.END)
             for result in searchResult:
-                listbox.insert(tk.END, result)               
+                listbox.insert(tk.END, result)  
+
     
 
     def chercherExpert(self) : 
@@ -401,7 +399,7 @@ class MyGUI():
         button = tk.Button(self.changeWindow, text="Changer", width=20, command=lambda: self.changeMedecinPharmacienQuary(listbox.get(tk.ACTIVE),"medecin"))
         button.pack(pady=10)
         # Return button #
-        buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.searchWindow,self.clientWindow))
+        buttonReturn = tk.Button(self.changeWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.changeWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
         
 
@@ -666,8 +664,6 @@ class MyGUI():
         ## Return button ##
         buttonReturn = tk.Button(self.diagnosticWindow, text="Retour", width=20, command = lambda: self.returnToParentWindow(self.diagnosticWindow,self.clientWindow))
         buttonReturn.pack(pady=10)
-
-    
         
 
     def returnToParentWindow(self,subwindow,root):
@@ -687,9 +683,15 @@ class MyGUI():
 
     def isGSMFormat(self,GSM):
         """Checks if the GSM is in the correct format"""
-        if len(GSM) != 10:
-            return False
-        if GSM[0:2] != "04":
+        if GSM[0:2] == "04" :
+            if len(GSM) != 10 :
+                print("1")
+                return False
+        elif GSM[0:4] == "+324" :
+            if len(GSM) != 12 :
+                print("2")
+                return False
+        else :
             return False
         for i in range(2,10):
             if GSM[i] < '0' or GSM[i] > '9':
