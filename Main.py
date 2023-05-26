@@ -362,7 +362,7 @@ class MyGUI():
     def facetedSearchQueries(self,variable1,variable2,entry,listbox,button):
         ## Button ##
         button.destroy()
-        query = [[f"""SELECT m.employeNom, m.INAMI FROM Medecin m WHERE m.Specialite = '{entry[0]}'""",f"""SELECT m.Nom, m.INAMI FROM Medecin ORDER BY m.Nom {entry}'"""],
+        query = [[f"""SELECT m.employeNom, m.INAMI FROM Medecin m WHERE m.Specialite = '{entry[0]}'""",f"""SELECT m.employeNom, m.INAMI FROM Medecin m ORDER BY m.employeNom {entry}"""],
                  [f"""SELECT DISTINCT m.medicamentNomCommercial FROM Medicament m WHERE m.DCI = '{entry[0]}'""",f"""SELECT DISTINCT m.medicamentNomCommercial FROM Medicament m WHERE m.systemeAnatomiqueNom = '{entry[0]}'"""],
                  [f"""SELECT p.pathologieNom FROM Pathologie p WHERE p.specialiteNom = '{entry[0]}'""",f"""SELECT p.pathologieNom FROM Pathologie p ORDER BY p.pathologieNom {entry}"""]]
         self.cursor.execute(query[variable1][variable2])
@@ -375,7 +375,6 @@ class MyGUI():
                 listbox.insert(tk.END, result)  
 
     
-
     def chercherExpert(self) : 
         """Opens a window to search for an expert"""
         ### Create the new window ###
