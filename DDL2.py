@@ -60,7 +60,7 @@ cursor.execute("""CREATE TABLE EmployeEmail (
                 )""")
 
 cursor.execute("CREATE TABLE Medecin LIKE Employe")
-cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES SystemeAnatomique(systemeAnatomiqueNom)")
+cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom)")
 
 cursor.execute("CREATE TABLE Pharmacien LIKE Employe")
 
