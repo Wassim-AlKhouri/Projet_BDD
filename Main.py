@@ -31,7 +31,8 @@ class MyGUI():
         self.text.pack()
         ## Entry ##
         self.entryNISS = tk.Entry(self.root, width=30, justify="center")
-        self.entryNISS.insert(0, "393834744538")
+        self.entryNISS.insert(0, "NISS")
+        # client test NISS: 393834744538
         self.entryNISS.bind("<FocusIn>", lambda event, arg="NISS": self.clear_default_entry(event, arg))
         self.entryNISS.pack(pady=10)
         ## Button ##
