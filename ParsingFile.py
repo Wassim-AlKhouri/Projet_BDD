@@ -83,7 +83,6 @@ def insert_medecin(path,cursor,inserted_entry,duplicate_entry):
             employeNom = medecin.find('nom').text
             employeNum = medecin.find('telephone').text
             specialite = medecin.find('specialite').text
-            print(specialite)
             try:
                 cursor.execute("""INSERT INTO medecin 
                                 (INAMI,employeNom,employeNum,specialite)
@@ -240,6 +239,8 @@ if __name__ == "__main__":
     inserted_entry,duplicate_entry = insert_csv("Données\pathologies.csv",cursor,inserted_entry,duplicate_entry)
     print("inserted entry : " + str(inserted_entry))
     print("duplicate entry : " + str(duplicate_entry))
+    for row in cursor:
+        print(row)
     cnx.commit()
     cursor.close()
     cnx.close()

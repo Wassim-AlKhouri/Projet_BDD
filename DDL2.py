@@ -23,6 +23,7 @@ except mysql.connector.errors.DatabaseError as err:
     else:
         print(err.msg)
         exit(1)
+        
 cursor.execute("USE groupAX_DB")
 
 cursor.execute("""CREATE TABLE Specialite (specialiteNom VARCHAR(50) PRIMARY KEY)""")
@@ -34,9 +35,8 @@ cursor.execute("""CREATE TABLE SpecialiteSystemeAnatomique (
                 )""")
 
 cursor.execute("""CREATE TABLE Pathologie (
-                pathologieNom VARCHAR(50),
-                specialiteNom VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom),
-                PRIMARY KEY (pathologieNom, specialiteNom)
+                pathologieNom VARCHAR(50) PRIMARY KEY,
+                specialiteNom VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom)
                 )""")
 
 cursor.execute("""CREATE TABLE Medicament (
@@ -60,6 +60,7 @@ cursor.execute("""CREATE TABLE EmployeEmail (
                 )""")
 
 cursor.execute("CREATE TABLE Medecin LIKE Employe")
+
 cursor.execute("ALTER TABLE Medecin ADD specialite VARCHAR(50) NOT NULL REFERENCES Specialite(specialiteNom)")
 
 cursor.execute("CREATE TABLE Pharmacien LIKE Employe")
@@ -101,7 +102,7 @@ cursor.execute("""CREATE TABLE DossierPatient (
                 )""")
 
 cursor.execute("""CREATE TABLE Diagnostic (
-                NISS DECIMAL(12,0) NOT NULL REFERENCES Dossier(NISS),
+                NISS DECIMAL(12,0) NOT NULL REFERENCES Patient(NISS),
                 dateDiagnostic DATE NOT NULL,
                 dateNaisseance DATE NOT NULL,
                 pathologieNom VARCHAR(50) NOT NULL REFERENCES Pathologie(pathologieNom),
